@@ -6,12 +6,17 @@
 
 #include <GLFW/glfw3.h>
 
+#include "glm/glm.hpp"
+using namespace glm;
+
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "common/controls.hpp"
 
 /* current rotation angle */
 static float angle = 0.f;
@@ -270,7 +275,7 @@ void display(void)
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  gluLookAt(0.f,0.f,3.f,0.f,0.f,-5.f,0.f,1.f,0.f);
+  // gluLookAt(0.f,0.f,3.f,0.f,0.f,-5.f,0.f,1.f,0.f);
 
   /* rotate it around the y axis */
   glRotatef(angle,0.f,1.f,0.f);
@@ -294,7 +299,17 @@ void display(void)
       /* now begin at the root node of the imported data and traverse
          the scenegraph by multiplying subsequent local transforms
          together on GL's matrix stack. */
-      recursive_render(scene, scene->mRootNode);
+      // TODO(wcraddock): put back in real model rendering
+      // recursive_render(scene, scene->mRootNode);
+        glBegin(GL_TRIANGLES);
+        glColor3f(2.f, 0.f, 0.f);
+        glVertex3f(-1.2f, -0.8f, 0.f);
+        glColor3f(0.f, 2.f, 0.f);
+        glVertex3f(1.2f, -0.8f, 0.f);
+        glColor3f(0.f, 0.f, 2.f);
+        glVertex3f(0.f, 1.2f, 0.f);
+        glEnd();
+
       glEndList();
   }
 
@@ -321,8 +336,8 @@ int loadasset(const char* path)
 int main(void)
 {
     // Load Cody's .obj model
-    printf("Loading Cody's object file...");
-    int result = loadasset("cody.obj");
+    printf("Loading object file...");
+    int result = loadasset("cube.obj");
     printf(" %d\n", result);
 
     GLFWwindow* window;
@@ -347,33 +362,52 @@ int main(void)
     printf("Entering main loop...\n");
     while (!glfwWindowShouldClose(window))
     {
-        float ratio;
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-        ratio = width / (float) height;
-        glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
-        glBegin(GL_TRIANGLES);
-        glColor3f(2.f, 0.f, 0.f);
-        glVertex3f(-1.2f, -0.8f, 0.f);
-        glColor3f(0.f, 2.f, 0.f);
-        glVertex3f(1.2f, -0.8f, 0.f);
-        glColor3f(0.f, 0.f, 2.f);
-        glVertex3f(0.f, 1.2f, 0.f);
-        glEnd();
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-        
-        // display();
-        // glfwSwapBuffers(window);
-        // glfwPollEvents();
-        // do_motion();
+        if (0) {
+          // Displays a rotating colorful triangle.
+          float ratio;
+          int width, height;
+          glfwGetFramebufferSize(window, &width, &height);
+          ratio = width / (float) height;
+          glViewport(0, 0, width, height);
+          glClear(GL_COLOR_BUFFER_BIT);
+          glMatrixMode(GL_PROJECTION);
+          glLoadIdentity();
+          glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+          glMatrixMode(GL_MODELVIEW);
+          glLoadIdentity();
+          glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
+          glBegin(GL_TRIANGLES);
+          glColor3f(2.f, 0.f, 0.f);
+          glVertex3f(-1.2f, -0.8f, 0.f);
+          glColor3f(0.f, 2.f, 0.f);
+          glVertex3f(1.2f, -0.8f, 0.f);
+          glColor3f(0.f, 0.f, 2.f);
+          glVertex3f(0.f, 1.2f, 0.f);
+          glEnd();
+          glfwSwapBuffers(window);
+          glfwPollEvents();
+        }
+
+        if (1) {
+          // // Compute the MVP matrix from keyboard and mouse input
+          // computeMatricesFromInputs(window);
+          // glm::mat4 ProjectionMatrix = getProjectionMatrix();
+          // glm::mat4 ViewMatrix = getViewMatrix();
+          // glm::mat4 ModelMatrix = glm::mat4(1.0);
+          // glm::mat4 MV = ViewMatrix * ModelMatrix;
+
+          // // Send our transformation to the currently bound shader, 
+          // // in the "MVP" uniform
+          // glMatrixMode(GL_PROJECTION);
+          // glLoadMatrixf(&ProjectionMatrix[0][0]);
+          // glMatrixMode(GL_MODELVIEW);
+          // glLoadMatrixf(&MV[0][0]);
+          
+          display();
+          glfwSwapBuffers(window);
+          glfwPollEvents();
+          do_motion();
+        }
     }
 
     glfwDestroyWindow(window);
