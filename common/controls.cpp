@@ -32,7 +32,7 @@ const float comparison_epsilon = 0.001;
 // Initial position : on +Z
 glm::vec3 position = glm::vec3( 0, 0, 3 ); 
 // Initial horizontal angle : toward -Z
-float horizontalAngle = 1.2f;
+float horizontalAngle = 3.14f;
 // Initial vertical angle : none
 float verticalAngle = 0.0f;
 // Initial Field of View
@@ -44,7 +44,6 @@ float mouseSpeed = 0.005f;
 
 
 void computeMatricesFromInputs(GLFWwindow* window){
-
   // static int iteration = 0;
 
   // if (iteration > 5) {
@@ -136,8 +135,8 @@ void computeMatricesFromInputs(GLFWwindow* window){
   printf("FoV %f\n", FoV);
 
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	ProjectionMatrix = glm::ortho( -5.f, 5.f, -50.f, 50.f);
-  // ProjectionMatrix = glm::perspective(FoV, 4.0f / 3.0f, 0.1f, 10.0f);
+	// ProjectionMatrix = glm::ortho( -5.f, 5.f, -50.f, 50.f);
+  ProjectionMatrix = glm::perspective(FoV, 4.0f / 3.0f, 0.1f, 10.0f);
   const char* s = glm::to_string(ProjectionMatrix).c_str();
 	printf("Projection matrix: %s\n", s);
 
