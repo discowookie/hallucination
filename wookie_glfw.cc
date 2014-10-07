@@ -273,12 +273,15 @@ void display(void)
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+  // glMatrixMode(GL_MODELVIEW);
+  // glLoadIdentity();
   // gluLookAt(0.f,0.f,3.f,0.f,0.f,-5.f,0.f,1.f,0.f);
+  // Eye is at 0,0,3
+  // Center of scens is at 0,0,-5
+  // Up vector is 0,1,0
 
   /* rotate it around the y axis */
-  glRotatef(angle,0.f,1.f,0.f);
+  // glRotatef(angle,0.f,1.f,0.f);
 
   /* scale the whole asset to fit into our view frustum */
   tmp = scene_max.x-scene_min.x;
@@ -300,15 +303,23 @@ void display(void)
          the scenegraph by multiplying subsequent local transforms
          together on GL's matrix stack. */
       // TODO(wcraddock): put back in real model rendering
-      // recursive_render(scene, scene->mRootNode);
+      
+      if (0) {
+        recursive_render(scene, scene->mRootNode);
+      }
+      
+      if (1) {
         glBegin(GL_TRIANGLES);
-        glColor3f(2.f, 0.f, 0.f);
+        glColor3f(1.f, 0.f, 0.f);
         glVertex3f(-1.2f, -0.8f, 0.f);
-        glColor3f(0.f, 2.f, 0.f);
+
+        glColor3f(0.f, 1.f, 0.f);
         glVertex3f(1.2f, -0.8f, 0.f);
-        glColor3f(0.f, 0.f, 2.f);
+
+        glColor3f(0.f, 0.f, 1.f);
         glVertex3f(0.f, 1.2f, 0.f);
         glEnd();
+      }
 
       glEndList();
   }
@@ -389,24 +400,24 @@ int main(void)
         }
 
         if (1) {
-          // // Compute the MVP matrix from keyboard and mouse input
-          // computeMatricesFromInputs(window);
-          // glm::mat4 ProjectionMatrix = getProjectionMatrix();
-          // glm::mat4 ViewMatrix = getViewMatrix();
-          // glm::mat4 ModelMatrix = glm::mat4(1.0);
-          // glm::mat4 MV = ViewMatrix * ModelMatrix;
+          // Compute the MVP matrix from keyboard and mouse input
+          computeMatricesFromInputs(window);
+          glm::mat4 ProjectionMatrix = getProjectionMatrix();
+          glm::mat4 ViewMatrix = getViewMatrix();
+          glm::mat4 ModelMatrix = glm::mat4(1.0);
+          glm::mat4 MV = ViewMatrix * ModelMatrix;
 
-          // // Send our transformation to the currently bound shader, 
-          // // in the "MVP" uniform
-          // glMatrixMode(GL_PROJECTION);
-          // glLoadMatrixf(&ProjectionMatrix[0][0]);
-          // glMatrixMode(GL_MODELVIEW);
-          // glLoadMatrixf(&MV[0][0]);
+          // Send our transformation to the currently bound shader, 
+          // in the "MVP" uniform
+          glMatrixMode(GL_PROJECTION);
+          glLoadMatrixf(&ProjectionMatrix[0][0]);
+          glMatrixMode(GL_MODELVIEW);
+          glLoadMatrixf(&MV[0][0]);
           
           display();
           glfwSwapBuffers(window);
           glfwPollEvents();
-          do_motion();
+          // do_motion();
         }
     }
 
