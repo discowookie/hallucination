@@ -24,7 +24,7 @@ glm::mat4 getProjectionMatrix() { return ProjectionMatrix; }
 
 const float comparison_epsilon = 0.001;
 
-glm::vec3 position = glm::vec3(0, 0.5f, 5.0f);
+glm::vec3 position = glm::vec3(0, 1.0f, 5.0f);
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
@@ -147,7 +147,6 @@ void computeMatricesFromInputs(GLFWwindow *window) {
   // Compute time difference between current and last frame
   double currentTime = glfwGetTime();
   float deltaTime = float(currentTime - lastTime);
-
 
   float FoV = initialFoV; // - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires
                           // setting up a callback for this. It's a bit too

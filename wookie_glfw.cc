@@ -348,15 +348,6 @@ void initialize() {
   GLfloat z_near = 1.0f;
   GLfloat z_far = 500.0f;
 
-  // Set up viewpoint and projection
-  // glMatrixMode(GL_PROJECTION);
-  // glViewport(0, 0, width, height);
-  // GLfloat aspect = (GLfloat)width / height;
-  // glMatrixMode(GL_PROJECTION);
-  // glLoadIdentity();
-  // gluPerspective(field_of_view_angle, aspect, z_near, z_far);
-  // glMatrixMode(GL_MODELVIEW);
-  
   // Set up z-buffering
   glShadeModel(GL_SMOOTH);
   glClearColor(0.0f, 0.1f, 0.0f, 0.5f);
@@ -407,6 +398,9 @@ int main(void) {
   // glfwSetCursorPos(window, 640.0f/2.0f, 480.0f/2.0f);
    
   glfwSetCursorPosCallback(window, cursor_position_callback);
+  // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
   
   printf("Calling initialize()...\n");
   initialize();

@@ -96,10 +96,6 @@ int Model_OBJ::Load(char *filename) {
 
     while (!objFile.eof()) // Start reading file data
     {
-      if (triangle_index > 100000) {
-        break;
-      }
-
       getline(objFile, line); // Get line from file
 
       if (line.c_str()[0] ==
