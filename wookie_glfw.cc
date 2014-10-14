@@ -291,9 +291,11 @@ void draw_random_hairs() {
       continue;
     }
 
-    glColor3f(1.0f, 0.0f, 0.0f);
+    double illumination = ((double) rand() / (RAND_MAX));
+    glColor3f(illumination, illumination, illumination);
 
     // TODO(wcraddock): Get normal at that point
+    // TODO(wcraddock): Add lighting
     
     const float hair_width = 0.0127f;
     const float hair_height = 0.0762f;
@@ -325,7 +327,7 @@ void display(void) {
     glNewList(scene_list, GL_COMPILE);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3f(1.0f, 0.86f, 0.69f);
     human_obj.Draw();
 
     draw_random_hairs();
