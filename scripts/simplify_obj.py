@@ -3,10 +3,13 @@
 import sys
 import re
 
+scale = 1.0
+
 if len(sys.argv) < 3:
   print("Usage: " + sys.argv[0] + " in-file out-file")
   sys.exit();
 
+vertex_regex = re.compile("([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)")
 face_regex = re.compile("((\d+)/?(\d+)?/?(\d+)?)+")
 
 output = list()
@@ -15,7 +18,9 @@ with open(sys.argv[1], 'r') as file:
   for line in file:
     # Vertex lines are passed straight through
     if line.startswith('v '):
-      output.append(line.strip())
+      matches = vertex_regex.findall(line)
+      vertex = [float(v) * scale for v in matches[0]]
+      output.append('v %f %f %f' % tuple(vertex))
 
     # Face lines have to broken up
     elif line.startswith('f '):

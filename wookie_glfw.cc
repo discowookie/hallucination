@@ -430,7 +430,7 @@ int main(void) {
   // printf(" %d\n", result);
   
   printf("Calling obj.Load()...\n");
-  human_obj.Load("cube_simple.obj");
+  human_obj.Load("cody_simple.obj");
 
   if (!glfwInit())
     exit(EXIT_FAILURE);
