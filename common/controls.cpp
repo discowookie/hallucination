@@ -24,7 +24,7 @@ glm::mat4 getProjectionMatrix() { return ProjectionMatrix; }
 
 const float comparison_epsilon = 0.001;
 
-glm::vec3 position = glm::vec3(0, 1.0f, 5.0f);
+glm::vec3 position = glm::vec3(0, 1.0f, 1.0f);
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
@@ -32,7 +32,7 @@ float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 90.0f;
 
-float speed = 0.1f;
+float speed = 0.01f;
 float mouseSpeed = 0.00001f;
 
 glm::vec3 direction;

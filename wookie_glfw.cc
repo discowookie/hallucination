@@ -325,10 +325,9 @@ void display(void) {
 
     glEndList();
   }
-  
+
   glCallList(scene_list);
 }
-
 
 typedef struct {
   int width;
@@ -343,7 +342,7 @@ typedef struct {
 void initialize() {
   GLint width = 640;
   GLint height = 480;
-  char* title = "Disco Wookie";
+  char *title = "Disco Wookie";
   GLfloat field_of_view_angle = 45;
   GLfloat z_near = 1.0f;
   GLfloat z_far = 500.0f;
@@ -395,62 +394,33 @@ int main(void) {
   glfwMakeContextCurrent(window);
   glfwSetKeyCallback(window, key_callback);
   glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
-  // glfwSetCursorPos(window, 640.0f/2.0f, 480.0f/2.0f);
-   
+
   glfwSetCursorPosCallback(window, cursor_position_callback);
   // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-  
+
   printf("Calling initialize()...\n");
   initialize();
 
   printf("Entering main loop...\n");
   while (!glfwWindowShouldClose(window)) {
-    if (0) {
-      // Displays a rotating colorful triangle.
-      float ratio;
-      int width, height;
-      glfwGetFramebufferSize(window, &width, &height);
-      ratio = width / (float)height;
-      glViewport(0, 0, width, height);
-      glClear(GL_COLOR_BUFFER_BIT);
-      glMatrixMode(GL_PROJECTION);
-      glLoadIdentity();
-      glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity();
-      glRotatef((float)glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
-      glBegin(GL_TRIANGLES);
-      glColor3f(2.f, 0.f, 0.f);
-      glVertex3f(-1.2f, -0.8f, 0.f);
-      glColor3f(0.f, 2.f, 0.f);
-      glVertex3f(1.2f, -0.8f, 0.f);
-      glColor3f(0.f, 0.f, 2.f);
-      glVertex3f(0.f, 1.2f, 0.f);
-      glEnd();
-      glfwSwapBuffers(window);
-      glfwPollEvents();
-    }
+    // Compute the MVP matrix from keyboard and mouse input
+    computeMatricesFromInputs(window);
+    glm::mat4 ProjectionMatrix = getProjectionMatrix();
+    glm::mat4 ViewMatrix = getViewMatrix();
+    glm::mat4 ModelMatrix = glm::mat4(1.0);
+    glm::mat4 MV = ViewMatrix * ModelMatrix;
 
-    if (1) {
-      // Compute the MVP matrix from keyboard and mouse input
-      computeMatricesFromInputs(window);
-      glm::mat4 ProjectionMatrix = getProjectionMatrix();
-      glm::mat4 ViewMatrix = getViewMatrix();
-      glm::mat4 ModelMatrix = glm::mat4(1.0);
-      glm::mat4 MV = ViewMatrix * ModelMatrix;
+    // Set the MVP matrix
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(&ProjectionMatrix[0][0]);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(&MV[0][0]);
 
-      // Set the MVP matrix
-      glMatrixMode(GL_PROJECTION);
-      glLoadMatrixf(&ProjectionMatrix[0][0]);
-      glMatrixMode(GL_MODELVIEW);
-      glLoadMatrixf(&MV[0][0]);
-
-      display();
-      glfwSwapBuffers(window);
-      glfwPollEvents();
-    }
+    display();
+    glfwSwapBuffers(window);
+    glfwPollEvents();
   }
 
   glfwDestroyWindow(window);

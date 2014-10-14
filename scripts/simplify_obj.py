@@ -28,11 +28,13 @@ with open(sys.argv[1], 'r') as file:
       if len(matches) == 3:
         face = (matches[0][1], matches[1][1], matches[2][1])
         output.append('f %s %s %s' % face)
-      if len(matches) == 4:
+      elif len(matches) == 4:
         face = (matches[0][1], matches[1][1], matches[2][1])
         output.append('f %s %s %s' % face)
         face = (matches[0][1], matches[2][1], matches[3][1])
         output.append('f %s %s %s' % face)
+      else:
+        print("Warning: ignored %d-sided polygon" % len(matches))
 
 with open(sys.argv[2], 'w') as file:
   file.write('\n'.join(output))
