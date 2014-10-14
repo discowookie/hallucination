@@ -20,6 +20,9 @@ using namespace glm;
 #include "common/controls.hpp"
 #include "common/obj_reader.h"
 
+static int window_width = 1024.0f;
+static int window_height = 768.0f;
+
 /* current rotation angle */
 static float angle = 0.f;
 
@@ -282,18 +285,16 @@ void draw_random_hairs() {
     int vertex_number = rand() % total_vertices;
     float *vertex = &human_obj.vertexBuffer[vertex_number * 3];
 
-    printf("Selected vertex # %d out of %d\n", vertex_number, total_vertices);
-
     // Make sure the point is on the torso
     if (vertex[1] > 1.5f || vertex[1] < 1.0f
-     || fabs(vertex[0]) > 0.25f || fabs(vertex[2]) > 0.25f) {
-      printf("Vertex was %f %f %f; ignoring...\n", vertex[0], vertex[1], vertex[2]);
+     || fabs(vertex[0]) > 0.3f || fabs(vertex[2]) > 0.3f) {
       continue;
     }
 
     double illumination = ((double) rand() / (RAND_MAX));
     glColor3f(illumination, illumination, illumination);
 
+    // TODO(wcraddock): Make sure each hair is not too close to another
     // TODO(wcraddock): Get normal at that point
     // TODO(wcraddock): Add lighting
     
@@ -349,8 +350,8 @@ typedef struct {
 } glutWindow;
 
 void initialize() {
-  GLint width = 640;
-  GLint height = 480;
+  GLint width = 1024;
+  GLint height = 768;
   char *title = "Disco Wookie";
   GLfloat field_of_view_angle = 45;
   GLfloat z_near = 1.0f;
@@ -393,7 +394,7 @@ int main(void) {
   glfwWindowHint(GLFW_SAMPLES, 4);
 
   printf("Creating OpenGL window...\n");
-  GLFWwindow *window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+  GLFWwindow *window = glfwCreateWindow(window_width, window_height, "Simple example", NULL, NULL);
   if (!window) {
     printf("Oh noes!\n");
     glfwTerminate();

@@ -16,6 +16,9 @@ using namespace glm;
 
 #include "controls.hpp"
 
+float window_width = 1024.0f;
+float window_height = 768.0f;
+
 glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
 
@@ -24,7 +27,7 @@ glm::mat4 getProjectionMatrix() { return ProjectionMatrix; }
 
 const float comparison_epsilon = 0.001;
 
-glm::vec3 position = glm::vec3(0, 1.6f, 1.0f);
+glm::vec3 position = glm::vec3(0, 1.4f, 1.0f);
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
@@ -79,8 +82,8 @@ void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
   if (print)
     printf("Cursor position is %f %f\n", xpos, ypos);
 
-  float horizontalAngleAdjustment = mouseSpeed * float(640.0 / 2.0 - xpos);
-  float verticalAngleAdjustment = mouseSpeed * float(480.0 / 2.0 - ypos);
+  float horizontalAngleAdjustment = mouseSpeed * float(window_width / 2.0 - xpos);
+  float verticalAngleAdjustment = mouseSpeed * float(window_height / 2.0 - ypos);
   if (print)
     printf("Adjusting angles by %f %f\n", horizontalAngleAdjustment,
            verticalAngleAdjustment);
