@@ -38,12 +38,6 @@ static void error_callback(int error, const char *description) {
   fputs(description, stderr);
 }
 
-static void key_callback(GLFWwindow *window, int key, int scancode, int action,
-                         int mods) {
-  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, GL_TRUE);
-}
-
 /* ----------------------------------------------------------------------------
  */
 void reshape(int width, int height) {
@@ -331,7 +325,7 @@ void display(void) {
 
     glEndList();
   }
-  printf("Calling display list...\n");
+  
   glCallList(scene_list);
 }
 
@@ -409,7 +403,10 @@ int main(void) {
 
   glfwMakeContextCurrent(window);
   glfwSetKeyCallback(window, key_callback);
+  glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
   // glfwSetCursorPos(window, 640.0f/2.0f, 480.0f/2.0f);
+   
+  glfwSetCursorPosCallback(window, cursor_position_callback);
   
   printf("Calling initialize()...\n");
   initialize();
