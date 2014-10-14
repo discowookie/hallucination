@@ -6,6 +6,7 @@
 
 #include <GLFW/glfw3.h>
 
+#define GLM_FORCE_RADIANS
 #include "glm/glm.hpp"
 using namespace glm;
 
@@ -17,108 +18,108 @@ using namespace glm;
 #include <stdio.h>
 
 #include "common/controls.hpp"
+#include "common/obj_reader.h"
 
 /* current rotation angle */
 static float angle = 0.f;
 
-#define aisgl_min(x,y) (x<y?x:y)
-#define aisgl_max(x,y) (y>x?y:x)
+#define aisgl_min(x, y) (x < y ? x : y)
+#define aisgl_max(x, y) (y > x ? y : x)
 
 /* the global Assimp scene object */
-const aiScene* scene = NULL;
+const aiScene *scene = NULL;
 GLuint scene_list = 0;
 aiVector3D scene_min, scene_max, scene_center;
 
-static void error_callback(int error, const char* description)
-{
-    fputs(description, stderr);
+// The human body object, from file cody.obj
+Model_OBJ human_obj;
+
+static void error_callback(int error, const char *description) {
+  fputs(description, stderr);
 }
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
+static void key_callback(GLFWwindow *window, int key, int scancode, int action,
+                         int mods) {
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
-/* ---------------------------------------------------------------------------- */
-void reshape(int width, int height)
-{
-  const double aspectRatio = (float) width / height, fieldOfView = 45.0;
+/* ----------------------------------------------------------------------------
+ */
+void reshape(int width, int height) {
+  const double aspectRatio = (float)width / height, fieldOfView = 45.0;
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(fieldOfView, aspectRatio,
-    1.0, 1000.0);  /* Znear and Zfar */
+  gluPerspective(fieldOfView, aspectRatio, 1.0, 1000.0); /* Znear and Zfar */
   glViewport(0, 0, width, height);
 }
 
-/* ---------------------------------------------------------------------------- */
-void get_bounding_box_for_node (const aiNode* nd, 
-  aiVector3D* min, 
-  aiVector3D* max, 
-  aiMatrix4x4* trafo
-){
+/* ----------------------------------------------------------------------------
+ */
+void get_bounding_box_for_node(const aiNode *nd, aiVector3D *min,
+                               aiVector3D *max, aiMatrix4x4 *trafo) {
   aiMatrix4x4 prev;
   unsigned int n = 0, t;
 
   prev = *trafo;
-  aiMultiplyMatrix4(trafo,&nd->mTransformation);
+  aiMultiplyMatrix4(trafo, &nd->mTransformation);
 
   for (; n < nd->mNumMeshes; ++n) {
-    const aiMesh* mesh = scene->mMeshes[nd->mMeshes[n]];
+    const aiMesh *mesh = scene->mMeshes[nd->mMeshes[n]];
     for (t = 0; t < mesh->mNumVertices; ++t) {
 
       aiVector3D tmp = mesh->mVertices[t];
-      aiTransformVecByMatrix4(&tmp,trafo);
+      aiTransformVecByMatrix4(&tmp, trafo);
 
-      min->x = aisgl_min(min->x,tmp.x);
-      min->y = aisgl_min(min->y,tmp.y);
-      min->z = aisgl_min(min->z,tmp.z);
+      min->x = aisgl_min(min->x, tmp.x);
+      min->y = aisgl_min(min->y, tmp.y);
+      min->z = aisgl_min(min->z, tmp.z);
 
-      max->x = aisgl_max(max->x,tmp.x);
-      max->y = aisgl_max(max->y,tmp.y);
-      max->z = aisgl_max(max->z,tmp.z);
+      max->x = aisgl_max(max->x, tmp.x);
+      max->y = aisgl_max(max->y, tmp.y);
+      max->z = aisgl_max(max->z, tmp.z);
     }
   }
 
   for (n = 0; n < nd->mNumChildren; ++n) {
-    get_bounding_box_for_node(nd->mChildren[n],min,max,trafo);
+    get_bounding_box_for_node(nd->mChildren[n], min, max, trafo);
   }
   *trafo = prev;
 }
 
-/* ---------------------------------------------------------------------------- */
-void get_bounding_box (aiVector3D* min, aiVector3D* max)
-{
+/* ----------------------------------------------------------------------------
+ */
+void get_bounding_box(aiVector3D *min, aiVector3D *max) {
   aiMatrix4x4 trafo;
   aiIdentityMatrix4(&trafo);
 
-  min->x = min->y = min->z =  1e10f;
+  min->x = min->y = min->z = 1e10f;
   max->x = max->y = max->z = -1e10f;
-  get_bounding_box_for_node(scene->mRootNode,min,max,&trafo);
+  get_bounding_box_for_node(scene->mRootNode, min, max, &trafo);
 }
 
-/* ---------------------------------------------------------------------------- */
-void color4_to_float4(const aiColor4D *c, float f[4])
-{
+/* ----------------------------------------------------------------------------
+ */
+void color4_to_float4(const aiColor4D *c, float f[4]) {
   f[0] = c->r;
   f[1] = c->g;
   f[2] = c->b;
   f[3] = c->a;
 }
 
-/* ---------------------------------------------------------------------------- */
-void set_float4(float f[4], float a, float b, float c, float d)
-{
+/* ----------------------------------------------------------------------------
+ */
+void set_float4(float f[4], float a, float b, float c, float d) {
   f[0] = a;
   f[1] = b;
   f[2] = c;
   f[3] = d;
 }
 
-/* ---------------------------------------------------------------------------- */
-void apply_material(const aiMaterial *mtl)
-{
+/* ----------------------------------------------------------------------------
+ */
+void apply_material(const aiMaterial *mtl) {
   float c[4];
 
   GLenum fill_mode;
@@ -133,58 +134,63 @@ void apply_material(const aiMaterial *mtl)
   unsigned int max;
 
   set_float4(c, 0.8f, 0.8f, 0.8f, 1.0f);
-  if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &diffuse))
+  if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &diffuse))
     color4_to_float4(&diffuse, c);
   glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, c);
 
   set_float4(c, 0.0f, 0.0f, 0.0f, 1.0f);
-  if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_SPECULAR, &specular))
+  if (AI_SUCCESS ==
+      aiGetMaterialColor(mtl, AI_MATKEY_COLOR_SPECULAR, &specular))
     color4_to_float4(&specular, c);
   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, c);
 
   set_float4(c, 0.2f, 0.2f, 0.2f, 1.0f);
-  if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_AMBIENT, &ambient))
+  if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_AMBIENT, &ambient))
     color4_to_float4(&ambient, c);
   glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, c);
 
   set_float4(c, 0.0f, 0.0f, 0.0f, 1.0f);
-  if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &emission))
+  if (AI_SUCCESS ==
+      aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &emission))
     color4_to_float4(&emission, c);
   glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, c);
 
   max = 1;
   ret1 = aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS, &shininess, &max);
-  if(ret1 == AI_SUCCESS) {
-      max = 1;
-      ret2 = aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS_STRENGTH, &strength, &max);
-    if(ret2 == AI_SUCCESS)
+  if (ret1 == AI_SUCCESS) {
+    max = 1;
+    ret2 = aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS_STRENGTH, &strength,
+                                   &max);
+    if (ret2 == AI_SUCCESS)
       glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess * strength);
-        else
-          glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-    }
-  else {
+    else
+      glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+  } else {
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
     set_float4(c, 0.0f, 0.0f, 0.0f, 0.0f);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, c);
   }
 
   max = 1;
-  if(AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_ENABLE_WIREFRAME, &wireframe, &max))
+  if (AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_ENABLE_WIREFRAME,
+                                              &wireframe, &max))
     fill_mode = wireframe ? GL_LINE : GL_FILL;
   else
     fill_mode = GL_FILL;
   glPolygonMode(GL_FRONT_AND_BACK, fill_mode);
 
   max = 1;
-  if((AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_TWOSIDED, &two_sided, &max)) && two_sided)
+  if ((AI_SUCCESS ==
+       aiGetMaterialIntegerArray(mtl, AI_MATKEY_TWOSIDED, &two_sided, &max)) &&
+      two_sided)
     glDisable(GL_CULL_FACE);
-  else 
+  else
     glEnable(GL_CULL_FACE);
 }
 
-/* ---------------------------------------------------------------------------- */
-void recursive_render(const aiScene *sc, const aiNode* nd)
-{
+/* ----------------------------------------------------------------------------
+ */
+void recursive_render(const aiScene *sc, const aiNode *nd) {
   printf("Top of recursive_render...\n");
   unsigned int i;
   unsigned int n = 0, t;
@@ -193,45 +199,52 @@ void recursive_render(const aiScene *sc, const aiNode* nd)
   /* update transform */
   aiTransposeMatrix4(&m);
   glPushMatrix();
-  glMultMatrixf((float*)&m);
+  glMultMatrixf((float *)&m);
 
   /* draw all meshes assigned to this node */
   for (; n < nd->mNumMeshes; ++n) {
-    const aiMesh* mesh = scene->mMeshes[nd->mMeshes[n]];
+    const aiMesh *mesh = scene->mMeshes[nd->mMeshes[n]];
 
     apply_material(sc->mMaterials[mesh->mMaterialIndex]);
 
-    if(mesh->mNormals == NULL) {
+    if (mesh->mNormals == NULL) {
       glDisable(GL_LIGHTING);
     } else {
       glEnable(GL_LIGHTING);
     }
 
     for (t = 0; t < mesh->mNumFaces; ++t) {
-      const aiFace* face = &mesh->mFaces[t];
+      const aiFace *face = &mesh->mFaces[t];
       GLenum face_mode;
 
-      switch(face->mNumIndices) {
-        case 1: face_mode = GL_POINTS; break;
-        case 2: face_mode = GL_LINES; break;
-        case 3: face_mode = GL_TRIANGLES; break;
-        default: face_mode = GL_POLYGON; break;
+      switch (face->mNumIndices) {
+      case 1:
+        face_mode = GL_POINTS;
+        break;
+      case 2:
+        face_mode = GL_LINES;
+        break;
+      case 3:
+        face_mode = GL_TRIANGLES;
+        break;
+      default:
+        face_mode = GL_POLYGON;
+        break;
       }
 
       glBegin(face_mode);
 
-      for(i = 0; i < face->mNumIndices; i++) {
+      for (i = 0; i < face->mNumIndices; i++) {
         int index = face->mIndices[i];
-        if(mesh->mColors[0] != NULL)
-          glColor4fv((GLfloat*)&mesh->mColors[0][index]);
-        if(mesh->mNormals != NULL) 
+        if (mesh->mColors[0] != NULL)
+          glColor4fv((GLfloat *)&mesh->mColors[0][index]);
+        if (mesh->mNormals != NULL)
           glNormal3fv(&mesh->mNormals[index].x);
         glVertex3fv(&mesh->mVertices[index].x);
       }
 
       glEnd();
     }
-
   }
 
   /* draw all children */
@@ -242,33 +255,31 @@ void recursive_render(const aiScene *sc, const aiNode* nd)
   glPopMatrix();
 }
 
-/* ---------------------------------------------------------------------------- */
-void do_motion (void)
-{
+/* ----------------------------------------------------------------------------
+ */
+void do_motion(void) {
   static GLint prev_time = 0;
   static GLint prev_fps_time = 0;
   static int frames = 0;
 
   // TODO(wcraddock): make sure this still works in glfw
   int time = glfwGetTime();
-  angle += (time-prev_time)*0.01;
+  angle += (time - prev_time) * 0.01;
   prev_time = time;
 
   frames += 1;
   if ((time - prev_fps_time) > 1000) /* update every seconds */
-    {
-        int current_fps = frames * 1000 / (time - prev_fps_time);
-        printf("%d fps\n", current_fps);
-        frames = 0;
-        prev_fps_time = time;
-    }
-
+  {
+    int current_fps = frames * 1000 / (time - prev_fps_time);
+    printf("%d fps\n", current_fps);
+    frames = 0;
+    prev_fps_time = time;
+  }
 
   // glutPostRedisplay();
 }
 
-void display(void)
-{
+void display(void) {
   float tmp;
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -284,58 +295,71 @@ void display(void)
   // glRotatef(angle,0.f,1.f,0.f);
 
   /* scale the whole asset to fit into our view frustum */
-  tmp = scene_max.x-scene_min.x;
-  tmp = aisgl_max(scene_max.y - scene_min.y,tmp);
-  tmp = aisgl_max(scene_max.z - scene_min.z,tmp);
+  tmp = scene_max.x - scene_min.x;
+  tmp = aisgl_max(scene_max.y - scene_min.y, tmp);
+  tmp = aisgl_max(scene_max.z - scene_min.z, tmp);
   tmp = 1.f / tmp;
   glScalef(tmp, tmp, tmp);
 
   /* center the model */
-  glTranslatef( -scene_center.x, -scene_center.y, -scene_center.z );
+  glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);
 
   /* if the display list has not been made yet, create a new one and
      fill it with scene contents */
-  if(scene_list == 0) {
-      printf("Creating display list...\n");
-      scene_list = glGenLists(1);
-      glNewList(scene_list, GL_COMPILE);
-      /* now begin at the root node of the imported data and traverse
-         the scenegraph by multiplying subsequent local transforms
-         together on GL's matrix stack. */
-      // TODO(wcraddock): put back in real model rendering
-      
-      if (0) {
-        recursive_render(scene, scene->mRootNode);
-      }
-      
-      if (1) {
-        glBegin(GL_TRIANGLES);
-        glColor3f(1.f, 0.f, 0.f);
-        glVertex3f(-1.2f, -0.8f, 0.f);
+  if (scene_list == 0) {
+    printf("Creating display list...\n");
+    scene_list = glGenLists(1);
+    glNewList(scene_list, GL_COMPILE);
+    /* now begin at the root node of the imported data and traverse
+       the scenegraph by multiplying subsequent local transforms
+       together on GL's matrix stack. */
+    // TODO(wcraddock): put back in real model rendering
 
-        glColor3f(0.f, 1.f, 0.f);
-        glVertex3f(1.2f, -0.8f, 0.f);
+    if (0) {
+      recursive_render(scene, scene->mRootNode);
+    }
 
-        glColor3f(0.f, 0.f, 1.f);
-        glVertex3f(0.f, 1.2f, 0.f);
-        glEnd();
-      }
+    if (0) {
+      glBegin(GL_TRIANGLES);
+      glColor3f(1.f, 0.f, 0.f);
+      glVertex3f(-1.2f, -0.8f, 0.f);
 
-      glEndList();
+      glColor3f(0.f, 1.f, 0.f);
+      glVertex3f(1.2f, -0.8f, 0.f);
+
+      glColor3f(0.f, 0.f, 1.f);
+      glVertex3f(0.f, 1.2f, 0.f);
+      glEnd();
+    }
+
+    if (1) {
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glLoadIdentity();
+      gluLookAt(0, 1, 20, 0, 0, 0, 0, 1, 0);
+      glPushMatrix();
+      glRotatef(45, 0, 1, 0);
+      glRotatef(90, 0, 1, 0);
+      //  g_rotation++;
+      human_obj.Draw();
+      glPopMatrix();
+     //  glfwSwapBuffers(window);
+    }
+
+    glEndList();
   }
 
   glCallList(scene_list);
 }
 
-/* ---------------------------------------------------------------------------- */
-int loadasset(const char* path)
-{
+/* ----------------------------------------------------------------------------
+ */
+int loadasset(const char *path) {
   /* we are taking one of the postprocessing presets to avoid
      spelling out 20+ single postprocessing flags here. */
-  scene = aiImportFile(path,aiProcessPreset_TargetRealtime_MaxQuality);
+  scene = aiImportFile(path, aiProcessPreset_TargetRealtime_MaxQuality);
 
   if (scene) {
-    get_bounding_box(&scene_min,&scene_max);
+    get_bounding_box(&scene_min, &scene_max);
     scene_center.x = (scene_min.x + scene_max.x) / 2.0f;
     scene_center.y = (scene_min.y + scene_max.y) / 2.0f;
     scene_center.z = (scene_min.z + scene_max.z) / 2.0f;
@@ -344,85 +368,165 @@ int loadasset(const char* path)
   return 1;
 }
 
-int main(void)
-{
-    // Load Cody's .obj model
-    printf("Loading object file...");
-    int result = loadasset("cube.obj");
-    printf(" %d\n", result);
+typedef struct {
+  int width;
+  int height;
+  char *title;
 
-    GLFWwindow* window;
+  float field_of_view_angle;
+  float z_near;
+  float z_far;
+} glutWindow;
 
-    glfwSetErrorCallback(error_callback);
+void initialize() {
+  glutWindow win;
+  win.width = 640;
+  win.height = 480;
+  win.title = "OpenGL/GLUT OBJ Loader.";
+  win.field_of_view_angle = 45;
+  win.z_near = 1.0f;
+  win.z_far = 500.0f;
 
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
+  glMatrixMode(GL_PROJECTION);
+  glViewport(0, 0, win.width, win.height);
+  GLfloat aspect = (GLfloat)win.width / win.height;
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(win.field_of_view_angle, aspect, win.z_near, win.z_far);
+  glMatrixMode(GL_MODELVIEW);
+  
+  glShadeModel(GL_SMOOTH);
+  glClearColor(0.0f, 0.1f, 0.0f, 0.5f);
+  glClearDepth(1.0f);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LEQUAL);
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-    printf("Creating OpenGL window...\n");
-    window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
-    if (!window)
-    {
-        printf("Oh noes!\n");
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
+  GLfloat amb_light[] = { 0.1, 0.1, 0.1, 1.0 };
+  GLfloat diffuse[] = { 0.6, 0.6, 0.6, 1 };
+  GLfloat specular[] = { 0.7, 0.7, 0.3, 1 };
+  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb_light);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+  glEnable(GL_LIGHT0);
+  glEnable(GL_COLOR_MATERIAL);
+  glShadeModel(GL_SMOOTH);
+  glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+  glDepthFunc(GL_LEQUAL);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+}
 
-    glfwMakeContextCurrent(window);
-    glfwSetKeyCallback(window, key_callback);
+int main(void) {
+  // Connect assimp's logging to stdout.
+  // aiLogStream stream =
+  //     aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
+  // aiAttachLogStream(&stream);
 
-    printf("Entering main loop...\n");
-    while (!glfwWindowShouldClose(window))
-    {
-        if (0) {
-          // Displays a rotating colorful triangle.
-          float ratio;
-          int width, height;
-          glfwGetFramebufferSize(window, &width, &height);
-          ratio = width / (float) height;
-          glViewport(0, 0, width, height);
-          glClear(GL_COLOR_BUFFER_BIT);
-          glMatrixMode(GL_PROJECTION);
-          glLoadIdentity();
-          glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-          glMatrixMode(GL_MODELVIEW);
-          glLoadIdentity();
-          glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
-          glBegin(GL_TRIANGLES);
-          glColor3f(2.f, 0.f, 0.f);
-          glVertex3f(-1.2f, -0.8f, 0.f);
-          glColor3f(0.f, 2.f, 0.f);
-          glVertex3f(1.2f, -0.8f, 0.f);
-          glColor3f(0.f, 0.f, 2.f);
-          glVertex3f(0.f, 1.2f, 0.f);
-          glEnd();
-          glfwSwapBuffers(window);
-          glfwPollEvents();
-        }
+  // // Load Cody's .obj model
+  // printf("Loading object file...");
+  // int result = loadasset("cube.obj");
+  // printf(" %d\n", result);
+  
+  printf("Calling obj.Load()...\n");
+  human_obj.Load("cody_simple.obj");
 
-        if (1) {
-          // Compute the MVP matrix from keyboard and mouse input
-          computeMatricesFromInputs(window);
-          glm::mat4 ProjectionMatrix = getProjectionMatrix();
-          glm::mat4 ViewMatrix = getViewMatrix();
-          glm::mat4 ModelMatrix = glm::mat4(1.0);
-          glm::mat4 MV = ViewMatrix * ModelMatrix;
+  if (!glfwInit())
+    exit(EXIT_FAILURE);
 
-          // Send our transformation to the currently bound shader, 
-          // in the "MVP" uniform
-          glMatrixMode(GL_PROJECTION);
-          glLoadMatrixf(&ProjectionMatrix[0][0]);
-          glMatrixMode(GL_MODELVIEW);
-          glLoadMatrixf(&MV[0][0]);
-          
-          display();
-          glfwSwapBuffers(window);
-          glfwPollEvents();
-          // do_motion();
-        }
-    }
+  glfwSetErrorCallback(error_callback);
 
-    glfwDestroyWindow(window);
+  glfwWindowHint(GLFW_SAMPLES, 4);
+
+  printf("Creating OpenGL window...\n");
+  GLFWwindow *window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+  if (!window) {
+    printf("Oh noes!\n");
     glfwTerminate();
+    exit(EXIT_FAILURE);
+  }
 
-    exit(EXIT_SUCCESS);
+  glfwMakeContextCurrent(window);
+  glfwSetKeyCallback(window, key_callback);
+  // glfwSetCursorPos(window, 640.0f/2.0f, 480.0f/2.0f);
+  
+  printf("Calling initialize()...\n");
+  initialize();
+
+  printf("Entering main loop...\n");
+  while (!glfwWindowShouldClose(window)) {
+    if (0) {
+      // Displays a rotating colorful triangle.
+      float ratio;
+      int width, height;
+      glfwGetFramebufferSize(window, &width, &height);
+      ratio = width / (float)height;
+      glViewport(0, 0, width, height);
+      glClear(GL_COLOR_BUFFER_BIT);
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+      glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();
+      glRotatef((float)glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
+      glBegin(GL_TRIANGLES);
+      glColor3f(2.f, 0.f, 0.f);
+      glVertex3f(-1.2f, -0.8f, 0.f);
+      glColor3f(0.f, 2.f, 0.f);
+      glVertex3f(1.2f, -0.8f, 0.f);
+      glColor3f(0.f, 0.f, 2.f);
+      glVertex3f(0.f, 1.2f, 0.f);
+      glEnd();
+      glfwSwapBuffers(window);
+      glfwPollEvents();
+    }
+
+    if (1) {
+      // Compute the MVP matrix from keyboard and mouse input
+      computeMatricesFromInputs(window);
+      glm::mat4 ProjectionMatrix = getProjectionMatrix();
+      glm::mat4 ViewMatrix = getViewMatrix();
+      glm::mat4 ModelMatrix = glm::mat4(1.0);
+      glm::mat4 MV = ViewMatrix * ModelMatrix;
+
+      // Send our transformation to the currently bound shader,
+      // in the "MVP" uniform
+      glMatrixMode(GL_PROJECTION);
+      glLoadMatrixf(&ProjectionMatrix[0][0]);
+      glMatrixMode(GL_MODELVIEW);
+      glLoadMatrixf(&MV[0][0]);
+
+      display();
+      glfwSwapBuffers(window);
+      glfwPollEvents();
+      // do_motion();
+    }
+
+    // if (0) {
+    //   // Compute the MVP matrix from keyboard and mouse input
+    //   computeMatricesFromInputs(window);
+    //   glm::mat4 ProjectionMatrix = getProjectionMatrix();
+    //   glm::mat4 ViewMatrix = getViewMatrix();
+    //   glm::mat4 ModelMatrix = glm::mat4(1.0);
+    //   glm::mat4 MV = ViewMatrix * ModelMatrix;
+
+    //   // Send our transformation to the currently bound shader,
+    //   // in the "MVP" uniform
+    //   glMatrixMode(GL_PROJECTION);
+    //   glLoadMatrixf(&ProjectionMatrix[0][0]);
+    //   glMatrixMode(GL_MODELVIEW);
+    //   glLoadMatrixf(&MV[0][0]);
+
+    //   display();
+    //   glfwSwapBuffers(window);
+    //   glfwPollEvents();
+    //   // do_motion();
+    // }
+  }
+
+  glfwDestroyWindow(window);
+  glfwTerminate();
+
+  exit(EXIT_SUCCESS);
 }

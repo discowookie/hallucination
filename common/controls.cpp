@@ -30,16 +30,16 @@ const float comparison_epsilon = 0.001;
 // Up vector is 0,1,0
 
 // Initial position : on +Z
-glm::vec3 position = glm::vec3( 0, 0, 3 ); 
+glm::vec3 position = glm::vec3( 0, 0, -3 ); 
 // Initial horizontal angle : toward -Z
-float horizontalAngle = 3.14f;
+float horizontalAngle = 0.00f;
 // Initial vertical angle : none
 float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 90.0f;
 
 float speed = 3.0f; // 3 units / second
-float mouseSpeed = 0.005f;
+float mouseSpeed = 0.1f;
 
 
 
@@ -65,23 +65,28 @@ void computeMatricesFromInputs(GLFWwindow* window){
 
 	// Reset mouse position for next frame
   // TODO(wcraddock): get real window size here. 
-	glfwSetCursorPos(window, 640.0f/2.0f, 480.0f/2.0f);
+	glfwSetCursorPos(window, 640.0/2.0, 480.0/2.0);
 
-  if (xpos == 0.0f && ypos == 0.0f) {
+  if (xpos == 0.0 && ypos == 0.0) {
     return;
   }
 
   printf("Cursor position is %f %f\n", xpos, ypos);
 
+  float horizontalAngleAdjustment = mouseSpeed * float(640.0/2.0 - xpos);
+  float verticalAngleAdjustment = mouseSpeed * float(480.0/2.0 - ypos);
+  printf("Adjusting angles by %f %f\n", horizontalAngleAdjustment,
+         verticalAngleAdjustment);
+
 	// Compute new orientation
-	horizontalAngle += mouseSpeed * float(640.0f/2.0f - xpos);
-	verticalAngle   += mouseSpeed * float(480.0f/2.0f - ypos);
-  printf("Angles are %f %f\n", horizontalAngle, verticalAngle);
+	horizontalAngle += horizontalAngleAdjustment;
+	verticalAngle   += verticalAngleAdjustment;
+  // printf("Angles are %f %f\n", horizontalAngle, verticalAngle);
 
   if (abs(horizontalAngle - 0.0) > comparison_epsilon ||
       abs(verticalAngle - 0.0) > comparison_epsilon) {
-    printf("Mouse movement: horizontalAngle %f verticalAngle %f\n",
-           horizontalAngle, verticalAngle);
+    // printf("Mouse movement: horizontalAngle %f verticalAngle %f\n",
+           // horizontalAngle, verticalAngle);
   }
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
@@ -93,7 +98,7 @@ void computeMatricesFromInputs(GLFWwindow* window){
   // glm::vec3 direction = glm::vec3(
   //                         glm::eulerAngleYX(horizontalAngle, verticalAngle)
   //                       * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)); 
-  printf("Camera direction: %f, %f, %f\n", direction.x, direction.y, direction.z);
+  // printf("Camera direction: %f, %f, %f\n", direction.x, direction.y, direction.z);
 	
 	// Right vector
 	glm::vec3 right = glm::vec3(
@@ -102,43 +107,43 @@ void computeMatricesFromInputs(GLFWwindow* window){
 		cos(horizontalAngle - 3.14f/2.0f)
 	);
 
-  printf("Right direction %f %f %f\n", right.x, right.y, right.z);
+  // printf("Right direction %f %f %f\n", right.x, right.y, right.z);
 	
 	// Up vector
 	glm::vec3 up = glm::cross( right, direction );
-  printf("Up direction %f %f %f\n", up.x, up.y, up.z);
+  // printf("Up direction %f %f %f\n", up.x, up.y, up.z);
 
 	// Move forward
 	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
-    printf("Moving up...\n");
+    // printf("Moving up...\n");
 		position += direction * deltaTime * speed;
 	}
 	// Move backward
 	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
-    printf("Moving down...\n");
+    // printf("Moving down...\n");
 		position -= direction * deltaTime * speed;
 	}
 	// Strafe right
 	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
-    printf("Moving right...\n");
+    // printf("Moving right...\n");
 		position += right * deltaTime * speed;
 	}
 	// Strafe left
 	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
-    printf("Moving left...\n");
+    // printf("Moving left...\n");
 		position -= right * deltaTime * speed;
 	}
 
-  printf("Position %f %f %f\n", position.x, position.y, position.z);
+  // printf("Position %f %f %f\n", position.x, position.y, position.z);
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
-  printf("FoV %f\n", FoV);
+  // printf("FoV %f\n", FoV);
 
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	// ProjectionMatrix = glm::ortho( -5.f, 5.f, -50.f, 50.f);
   ProjectionMatrix = glm::perspective(FoV, 4.0f / 3.0f, 0.1f, 10.0f);
   const char* s = glm::to_string(ProjectionMatrix).c_str();
-	printf("Projection matrix: %s\n", s);
+	// printf("Projection matrix: %s\n", s);
 
   // Camera matrix
 	ViewMatrix = glm::lookAt(
