@@ -24,23 +24,7 @@ glm::mat4 getProjectionMatrix() { return ProjectionMatrix; }
 
 const float comparison_epsilon = 0.001;
 
-// Eye is at 0,0,3
-// Center of scens is at 0,0,-5
-// Up vector is 0,1,0
-
-// Initial position : on +Z
-// glm::vec3 position = glm::vec3( 0, 0, -3 );
-// // Initial horizontal angle : toward -Z
-// float horizontalAngle = 0.00f;
-// // Initial vertical angle : none
-// float verticalAngle = 0.0f;
-// // Initial Field of View
-// float initialFoV = 90.0f;
-
-// float speed = 3.0f; // 3 units / second
-// float mouseSpeed = 0.1f;
-
-glm::vec3 position = glm::vec3(0, 0, 0);
+glm::vec3 position = glm::vec3(0, 0.5f, -1.0f);
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
@@ -149,7 +133,7 @@ void computeMatricesFromInputs(GLFWwindow *window) {
   // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit
   // <-> 100 units
   // ProjectionMatrix = glm::ortho( -5.f, 5.f, -50.f, 50.f);
-  ProjectionMatrix = glm::perspective(FoV, 4.0f / 3.0f, 1.0f, 500.0f);
+  ProjectionMatrix = glm::perspective(FoV, 4.0f / 3.0f, 0.1f, 500.0f);
   const char *s = glm::to_string(ProjectionMatrix).c_str();
   // printf("Projection matrix: %s\n", s);
 

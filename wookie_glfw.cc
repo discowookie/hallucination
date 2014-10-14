@@ -301,8 +301,8 @@ void display(void) {
   // tmp = 1.f / tmp;
   // glScalef(tmp, tmp, tmp);
 
-  // /* center the model */
-  // glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);
+  /* center the model */
+  glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);
 
   /* if the display list has not been made yet, create a new one and
      fill it with scene contents */
@@ -310,14 +310,6 @@ void display(void) {
     printf("Creating display list...\n");
     scene_list = glGenLists(1);
     glNewList(scene_list, GL_COMPILE);
-    /* now begin at the root node of the imported data and traverse
-       the scenegraph by multiplying subsequent local transforms
-       together on GL's matrix stack. */
-    // TODO(wcraddock): put back in real model rendering
-
-    if (0) {
-      recursive_render(scene, scene->mRootNode);
-    }
 
     if (0) {
       glBegin(GL_TRIANGLES);
@@ -334,15 +326,7 @@ void display(void) {
 
     if (1) {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      // glLoadIdentity();
-      // gluLookAt(0, 1, 20, 0, 0, 0, 0, 1, 0);
-      // glPushMatrix();
-      // glRotatef(45, 0, 1, 0);
-      // glRotatef(90, 0, 1, 0);
-      //  g_rotation++;
       human_obj.Draw();
-      glPopMatrix();
-     //  glfwSwapBuffers(window);
     }
 
     glEndList();
@@ -351,22 +335,6 @@ void display(void) {
   glCallList(scene_list);
 }
 
-/* ----------------------------------------------------------------------------
- */
-// int loadasset(const char *path) {
-//   /* we are taking one of the postprocessing presets to avoid
-//      spelling out 20+ single postprocessing flags here. */
-//   scene = aiImportFile(path, aiProcessPreset_TargetRealtime_MaxQuality);
-
-//   if (scene) {
-//     get_bounding_box(&scene_min, &scene_max);
-//     scene_center.x = (scene_min.x + scene_max.x) / 2.0f;
-//     scene_center.y = (scene_min.y + scene_max.y) / 2.0f;
-//     scene_center.z = (scene_min.z + scene_max.z) / 2.0f;
-//     return 0;
-//   }
-//   return 1;
-// }
 
 typedef struct {
   int width;
@@ -379,22 +347,23 @@ typedef struct {
 } glutWindow;
 
 void initialize() {
-  glutWindow win;
-  win.width = 640;
-  win.height = 480;
-  win.title = "OpenGL/GLUT OBJ Loader.";
-  win.field_of_view_angle = 45;
-  win.z_near = 1.0f;
-  win.z_far = 500.0f;
+  GLint width = 640;
+  GLint height = 480;
+  char* title = "Disco Wookie";
+  GLfloat field_of_view_angle = 45;
+  GLfloat z_near = 1.0f;
+  GLfloat z_far = 500.0f;
 
-  glMatrixMode(GL_PROJECTION);
-  glViewport(0, 0, win.width, win.height);
-  GLfloat aspect = (GLfloat)win.width / win.height;
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(win.field_of_view_angle, aspect, win.z_near, win.z_far);
-  glMatrixMode(GL_MODELVIEW);
+  // Set up viewpoint and projection
+  // glMatrixMode(GL_PROJECTION);
+  // glViewport(0, 0, width, height);
+  // GLfloat aspect = (GLfloat)width / height;
+  // glMatrixMode(GL_PROJECTION);
+  // glLoadIdentity();
+  // gluPerspective(field_of_view_angle, aspect, z_near, z_far);
+  // glMatrixMode(GL_MODELVIEW);
   
+  // Set up z-buffering
   glShadeModel(GL_SMOOTH);
   glClearColor(0.0f, 0.1f, 0.0f, 0.5f);
   glClearDepth(1.0f);
@@ -402,6 +371,7 @@ void initialize() {
   glDepthFunc(GL_LEQUAL);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
+  // Set up lighting
   GLfloat amb_light[] = { 0.1, 0.1, 0.1, 1.0 };
   GLfloat diffuse[] = { 0.6, 0.6, 0.6, 1 };
   GLfloat specular[] = { 0.7, 0.7, 0.3, 1 };
@@ -419,16 +389,6 @@ void initialize() {
 }
 
 int main(void) {
-  // Connect assimp's logging to stdout.
-  // aiLogStream stream =
-  //     aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
-  // aiAttachLogStream(&stream);
-
-  // // Load Cody's .obj model
-  // printf("Loading object file...");
-  // int result = loadasset("cube.obj");
-  // printf(" %d\n", result);
-  
   printf("Calling obj.Load()...\n");
   human_obj.Load("cody_simple.obj");
 
@@ -490,8 +450,7 @@ int main(void) {
       glm::mat4 ModelMatrix = glm::mat4(1.0);
       glm::mat4 MV = ViewMatrix * ModelMatrix;
 
-      // Send our transformation to the currently bound shader,
-      // in the "MVP" uniform
+      // Set the MVP matrix
       glMatrixMode(GL_PROJECTION);
       glLoadMatrixf(&ProjectionMatrix[0][0]);
       glMatrixMode(GL_MODELVIEW);
@@ -500,29 +459,7 @@ int main(void) {
       display();
       glfwSwapBuffers(window);
       glfwPollEvents();
-      // do_motion();
     }
-
-    // if (0) {
-    //   // Compute the MVP matrix from keyboard and mouse input
-    //   computeMatricesFromInputs(window);
-    //   glm::mat4 ProjectionMatrix = getProjectionMatrix();
-    //   glm::mat4 ViewMatrix = getViewMatrix();
-    //   glm::mat4 ModelMatrix = glm::mat4(1.0);
-    //   glm::mat4 MV = ViewMatrix * ModelMatrix;
-
-    //   // Send our transformation to the currently bound shader,
-    //   // in the "MVP" uniform
-    //   glMatrixMode(GL_PROJECTION);
-    //   glLoadMatrixf(&ProjectionMatrix[0][0]);
-    //   glMatrixMode(GL_MODELVIEW);
-    //   glLoadMatrixf(&MV[0][0]);
-
-    //   display();
-    //   glfwSwapBuffers(window);
-    //   glfwPollEvents();
-    //   // do_motion();
-    // }
   }
 
   glfwDestroyWindow(window);
