@@ -295,14 +295,14 @@ void display(void) {
   // glRotatef(angle,0.f,1.f,0.f);
 
   /* scale the whole asset to fit into our view frustum */
-  tmp = scene_max.x - scene_min.x;
-  tmp = aisgl_max(scene_max.y - scene_min.y, tmp);
-  tmp = aisgl_max(scene_max.z - scene_min.z, tmp);
-  tmp = 1.f / tmp;
-  glScalef(tmp, tmp, tmp);
+  // tmp = scene_max.x - scene_min.x;
+  // tmp = aisgl_max(scene_max.y - scene_min.y, tmp);
+  // tmp = aisgl_max(scene_max.z - scene_min.z, tmp);
+  // tmp = 1.f / tmp;
+  // glScalef(tmp, tmp, tmp);
 
-  /* center the model */
-  glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);
+  // /* center the model */
+  // glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);
 
   /* if the display list has not been made yet, create a new one and
      fill it with scene contents */
@@ -334,11 +334,11 @@ void display(void) {
 
     if (1) {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      glLoadIdentity();
-      gluLookAt(0, 1, 20, 0, 0, 0, 0, 1, 0);
-      glPushMatrix();
-      glRotatef(45, 0, 1, 0);
-      glRotatef(90, 0, 1, 0);
+      // glLoadIdentity();
+      // gluLookAt(0, 1, 20, 0, 0, 0, 0, 1, 0);
+      // glPushMatrix();
+      // glRotatef(45, 0, 1, 0);
+      // glRotatef(90, 0, 1, 0);
       //  g_rotation++;
       human_obj.Draw();
       glPopMatrix();
@@ -347,26 +347,26 @@ void display(void) {
 
     glEndList();
   }
-
+  printf("Calling display list...\n");
   glCallList(scene_list);
 }
 
 /* ----------------------------------------------------------------------------
  */
-int loadasset(const char *path) {
-  /* we are taking one of the postprocessing presets to avoid
-     spelling out 20+ single postprocessing flags here. */
-  scene = aiImportFile(path, aiProcessPreset_TargetRealtime_MaxQuality);
+// int loadasset(const char *path) {
+//   /* we are taking one of the postprocessing presets to avoid
+//      spelling out 20+ single postprocessing flags here. */
+//   scene = aiImportFile(path, aiProcessPreset_TargetRealtime_MaxQuality);
 
-  if (scene) {
-    get_bounding_box(&scene_min, &scene_max);
-    scene_center.x = (scene_min.x + scene_max.x) / 2.0f;
-    scene_center.y = (scene_min.y + scene_max.y) / 2.0f;
-    scene_center.z = (scene_min.z + scene_max.z) / 2.0f;
-    return 0;
-  }
-  return 1;
-}
+//   if (scene) {
+//     get_bounding_box(&scene_min, &scene_max);
+//     scene_center.x = (scene_min.x + scene_max.x) / 2.0f;
+//     scene_center.y = (scene_min.y + scene_max.y) / 2.0f;
+//     scene_center.z = (scene_min.z + scene_max.z) / 2.0f;
+//     return 0;
+//   }
+//   return 1;
+// }
 
 typedef struct {
   int width;
@@ -430,7 +430,7 @@ int main(void) {
   // printf(" %d\n", result);
   
   printf("Calling obj.Load()...\n");
-  human_obj.Load("cody_simple.obj");
+  human_obj.Load("cube_simple.obj");
 
   if (!glfwInit())
     exit(EXIT_FAILURE);
