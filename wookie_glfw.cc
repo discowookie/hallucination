@@ -269,31 +269,50 @@ void do_motion(void) {
     frames = 0;
     prev_fps_time = time;
   }
+}
 
-  // glutPostRedisplay();
+void draw_random_hairs() {
+  srand(time(NULL));
+
+  const int hairs_to_draw = 1000;
+  int hairs_drawn = 0;
+
+  while (hairs_drawn < hairs_to_draw) {
+    int total_vertices = human_obj.TotalConnectedPoints / 3;
+    int vertex_number = rand() % total_vertices;
+    float *vertex = &human_obj.vertexBuffer[vertex_number * 3];
+
+    printf("Selected vertex # %d out of %d\n", vertex_number, total_vertices);
+
+    // Make sure the point is on the torso
+    if (vertex[1] > 1.5f || vertex[1] < 1.0f
+     || fabs(vertex[0]) > 0.25f || fabs(vertex[2]) > 0.25f) {
+      printf("Vertex was %f %f %f; ignoring...\n", vertex[0], vertex[1], vertex[2]);
+      continue;
+    }
+
+    glColor3f(1.0f, 0.0f, 0.0f);
+
+    // TODO(wcraddock): Get normal at that point
+    
+    const float hair_width = 0.0127f;
+    const float hair_height = 0.0762f;
+
+    glBegin(GL_QUADS);
+    glVertex3f(vertex[0], vertex[1], vertex[2]); // top left
+    glVertex3f(vertex[0], vertex[1] - hair_height, vertex[2]); // bottom left
+    glVertex3f(vertex[0] + hair_width, vertex[1] - hair_height, vertex[2]); // bottom right
+    glVertex3f(vertex[0] + hair_width, vertex[1], vertex[2]); // top right
+    glEnd();
+
+    hairs_drawn += 1;
+  }
 }
 
 void display(void) {
   float tmp;
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  // glMatrixMode(GL_MODELVIEW);
-  // glLoadIdentity();
-  // gluLookAt(0.f,0.f,3.f,0.f,0.f,-5.f,0.f,1.f,0.f);
-  // Eye is at 0,0,3
-  // Center of scens is at 0,0,-5
-  // Up vector is 0,1,0
-
-  /* rotate it around the y axis */
-  // glRotatef(angle,0.f,1.f,0.f);
-
-  /* scale the whole asset to fit into our view frustum */
-  // tmp = scene_max.x - scene_min.x;
-  // tmp = aisgl_max(scene_max.y - scene_min.y, tmp);
-  // tmp = aisgl_max(scene_max.z - scene_min.z, tmp);
-  // tmp = 1.f / tmp;
-  // glScalef(tmp, tmp, tmp);
 
   /* center the model */
   glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);
@@ -305,23 +324,11 @@ void display(void) {
     scene_list = glGenLists(1);
     glNewList(scene_list, GL_COMPILE);
 
-    if (0) {
-      glBegin(GL_TRIANGLES);
-      glColor3f(1.f, 0.f, 0.f);
-      glVertex3f(-1.2f, -0.8f, 0.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    human_obj.Draw();
 
-      glColor3f(0.f, 1.f, 0.f);
-      glVertex3f(1.2f, -0.8f, 0.f);
-
-      glColor3f(0.f, 0.f, 1.f);
-      glVertex3f(0.f, 1.2f, 0.f);
-      glEnd();
-    }
-
-    if (1) {
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      human_obj.Draw();
-    }
+    draw_random_hairs();
 
     glEndList();
   }

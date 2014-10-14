@@ -3,7 +3,7 @@
 import sys
 import re
 
-scale = 1.0/16.0
+scale = 1.0/10.0
 
 if len(sys.argv) < 3:
   print("Usage: " + sys.argv[0] + " in-file out-file")

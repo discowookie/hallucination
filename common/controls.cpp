@@ -24,7 +24,7 @@ glm::mat4 getProjectionMatrix() { return ProjectionMatrix; }
 
 const float comparison_epsilon = 0.001;
 
-glm::vec3 position = glm::vec3(0, 1.0f, 1.0f);
+glm::vec3 position = glm::vec3(0, 1.6f, 1.0f);
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
@@ -40,57 +40,44 @@ glm::vec3 right;
 glm::vec3 up;
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
-                         int mods) {
+                  int mods) {
+  bool print = 0;
+
   if (key == GLFW_KEY_ESCAPE && (action == GLFW_PRESS || action == GLFW_REPEAT))
     glfwSetWindowShouldClose(window, GL_TRUE);
 
   // Move forward
   if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-    printf("Moving up...\n");
+    if (print)
+      printf("Moving up...\n");
     position += direction * speed;
   }
   // Move backward
   if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-    printf("Moving down...\n");
+    if (print)
+      printf("Moving down...\n");
     position -= direction * speed;
   }
   // Strafe right
-  if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-    printf("Moving right...\n");
+  if (key == GLFW_KEY_RIGHT &&
+      (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (print)
+      printf("Moving right...\n");
     position += right * speed;
   }
   // Strafe left
   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-    printf("Moving left...\n");
+    if (print)
+      printf("Moving left...\n");
     position -= right * speed;
   }
 }
 
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
-{
-  bool print = 1;
-
-  // // Get mouse position
-  // double xpos, ypos;
-  // glfwGetCursorPos(window, &xpos, &ypos);
-
-  // // Reset mouse position for next frame
-  // // TODO(wcraddock): get real window size here.
-  // glfwSetCursorPos(window, 640.0 / 2.0, 480.0 / 2.0);
-
-  // if (xpos == 0.0 && ypos == 0.0) {
-  //   return;
-  // }
-
-  // // if (xpos != 320.0 || ypos != 240.0) {
-  // //   print = 1;
-  // //   xpos = 320.0;
-  // //   ypos = 240.0;
-  // // }
+void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
+  bool print = 0;
 
   if (print)
     printf("Cursor position is %f %f\n", xpos, ypos);
-
 
   float horizontalAngleAdjustment = mouseSpeed * float(640.0 / 2.0 - xpos);
   float verticalAngleAdjustment = mouseSpeed * float(480.0 / 2.0 - ypos);
@@ -111,9 +98,9 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
   }
 
   // Direction : Spherical coordinates to Cartesian coordinates conversion
-  direction = glm::vec3(cos(verticalAngle) * sin(horizontalAngle),
-                      sin(verticalAngle),
-                      cos(verticalAngle) * cos(horizontalAngle));
+  direction =
+      glm::vec3(cos(verticalAngle) * sin(horizontalAngle), sin(verticalAngle),
+                cos(verticalAngle) * cos(horizontalAngle));
   // glm::vec3 direction = glm::vec3(
   //                         glm::eulerAngleYX(horizontalAngle, verticalAngle)
   //                       * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
@@ -123,7 +110,7 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 
   // Right vector
   right = glm::vec3(sin(horizontalAngle - 3.14f / 2.0f), 0,
-                              cos(horizontalAngle - 3.14f / 2.0f));
+                    cos(horizontalAngle - 3.14f / 2.0f));
 
   if (print)
     printf("Right direction %f %f %f\n", right.x, right.y, right.z);
@@ -132,7 +119,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
   up = glm::cross(right, direction);
   if (print)
     printf("Up direction %f %f %f\n", up.x, up.y, up.z);
-
 
   if (print)
     printf("Position %f %f %f\n", position.x, position.y, position.z);
