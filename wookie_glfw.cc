@@ -33,7 +33,7 @@ static float angle = 0.f;
 
 /* the global Assimp scene object */
 const aiScene *scene = NULL;
-GLuint scene_list = 0;
+GLuint human_display_list = 0;
 aiVector3D scene_min, scene_max, scene_center;
 
 // Models for the human body and for the jacket.
@@ -279,11 +279,21 @@ void do_motion(void) {
 
 #define TOTAL_FLOATS_IN_TRIANGLE 9
 
-float find_closest_hair(glm::vec3& vertex, std::vector<glm::vec3>& hairs) {
+// Keep track of the all hair locations that have already been selected.
+class Hair {
+public:
+  glm::vec3       top_center;
+  glm::vec3       vertices[4];
+  glm::vec3       color;
+};
+
+static std::vector<Hair> hairs;
+
+float find_closest_hair(glm::vec3& vertex) {
   float min_distance = FLT_MAX;
 
   for (unsigned int i = 0; i < hairs.size(); ++i) {
-    float distance = glm::length(vertex - hairs[i]);
+    float distance = glm::length(vertex - hairs[i].top_center);
     if (distance < min_distance) {
       min_distance = distance;
     }
@@ -292,16 +302,10 @@ float find_closest_hair(glm::vec3& vertex, std::vector<glm::vec3>& hairs) {
   return min_distance;
 }
 
-void draw_random_hairs() {
+void generate_random_hairs(int num_hairs) {
   srand(time(NULL));
 
-  const int hairs_to_draw = 2400;
-  int hairs_drawn = 0;
-
-  // Keep track of the all hair locations that have already been selected.
-  std::vector<glm::vec3> hairs;
-
-  while (hairs_drawn < hairs_to_draw) {
+  while (hairs.size() < num_hairs) {
     // Pick a random face
     int total_faces = jacket_obj.TotalConnectedTriangles / 9;
     int face_number = rand() % total_faces;
@@ -318,7 +322,7 @@ void draw_random_hairs() {
     glm::vec3 top_center = A + r1 * (B - A) + r2 * (C - A);
 
     // If the point is too close to an existing hair, try again.
-    float closest_hair = find_closest_hair(top_center, hairs);
+    float closest_hair = find_closest_hair(top_center);
     if (closest_hair < 0.0127f) {
       continue;
     }
@@ -327,10 +331,10 @@ void draw_random_hairs() {
     float *normal_f = &jacket_obj.normals[face_number * TOTAL_FLOATS_IN_TRIANGLE];
     glm::vec3 normal = glm::normalize(
         glm::vec3(normal_f[0], normal_f[1], normal_f[2]));
-    printf("normal from file: %f %f %f\n", normal.x, normal.y, normal.z);
+    // printf("normal from file: %f %f %f\n", normal.x, normal.y, normal.z);
 
     normal = glm::normalize(glm::cross(B - A, C - A));
-    printf("computed normal: %f %f %f\n", normal.x, normal.y, normal.z);
+    // printf("computed normal: %f %f %f\n", normal.x, normal.y, normal.z);
 
     // Cross the normal with the "straight down" direction to get a vector
     // that points left, along the width of the hair.
@@ -349,48 +353,43 @@ void draw_random_hairs() {
     glm::vec3 bottom_right = bottom_left + hair_width * hair_left;
     glm::vec3 top_right = bottom_right - hair_height * hair_down;
 
-    printf("top_center %f %f %f\n", top_center.x, top_center.y, top_center.z);
-    printf("normal %f %f %f\n", normal.x, normal.y, normal.z);
-    printf("hair_left %f %f %f\n", hair_left.x, hair_left.y, hair_left.z);
-    printf("hair_down %f %f %f\n", hair_down.x, hair_down.y, hair_down.z);
-    printf("top_left %f %f %f\n", top_left.x, top_left.y, top_left.z);
-    printf("bottom_left %f %f %f\n", bottom_left.x, bottom_left.y,
-           bottom_left.z);
-    printf("bottom_right %f %f %f\n", bottom_right.x, bottom_right.y,
-           bottom_right.z);
-    printf("top_right %f %f %f\n", top_right.x, top_right.y, top_right.z);
+    // printf("top_center %f %f %f\n", top_center.x, top_center.y, top_center.z);
+    // printf("normal %f %f %f\n", normal.x, normal.y, normal.z);
+    // printf("hair_left %f %f %f\n", hair_left.x, hair_left.y, hair_left.z);
+    // printf("hair_down %f %f %f\n", hair_down.x, hair_down.y, hair_down.z);
+    // printf("top_left %f %f %f\n", top_left.x, top_left.y, top_left.z);
+    // printf("bottom_left %f %f %f\n", bottom_left.x, bottom_left.y,
+    //        bottom_left.z);
+    // printf("bottom_right %f %f %f\n", bottom_right.x, bottom_right.y,
+    //        bottom_right.z);
+    // printf("top_right %f %f %f\n", top_right.x, top_right.y, top_right.z);
+
+    Hair hair;
+    hair.top_center = top_center;
+    hair.vertices[0] = top_left;
+    hair.vertices[1] = bottom_left;
+    hair.vertices[2] = bottom_right;
+    hair.vertices[3] = top_right;
+
+    hairs.push_back(hair);
+  }
+}
+
+void draw_hairs() {
+  for (unsigned int i = 0; i < hairs.size(); ++i) {
+    Hair &hair = hairs[i];
 
     double illumination = ((double)rand() / (RAND_MAX));
     glColor3f(illumination, illumination, illumination);
 
-    // glBegin(GL_LINES);
-    // glColor3f(1.0f, 0.0f, 0.0f);
-    // glVertex3f(top_center.x, top_center.y, top_center.z);
-    // glm::vec3 end = top_center + normal;
-    // printf("end point %f %f %f\n", end.x, end.y, end.z);
-    // glVertex3f(end.x, end.y, end.z);
-    // glEnd();
-
-    // TODO(wcraddock): Make sure each hair is not too close to another
-    // TODO(wcraddock): Get normal at that point
-    // TODO(wcraddock): Add lighting
-
     glBegin(GL_QUADS);
-    // glVertex3f(vertex[0], vertex[1], vertex[2]);               // top left
-    // glVertex3f(vertex[0], vertex[1] - hair_height, vertex[2]); // bottom left
-    // glVertex3f(vertex[0] + hair_width, vertex[1] - hair_height,
-    //            vertex[2]);                                    // bottom right
-    // glVertex3f(vertex[0] + hair_width, vertex[1], vertex[2]); // top right
 
-    glVertex3f(top_left.x, top_left.y, top_left.z);
-    glVertex3f(bottom_left.x, bottom_left.y, bottom_left.z);
-    glVertex3f(bottom_right.x, bottom_right.y, bottom_right.z);
-    glVertex3f(top_right.x, top_right.y, top_right.z);
+    glVertex3f(hair.vertices[0].x, hair.vertices[0].y, hair.vertices[0].z);
+    glVertex3f(hair.vertices[1].x, hair.vertices[1].y, hair.vertices[1].z);
+    glVertex3f(hair.vertices[2].x, hair.vertices[2].y, hair.vertices[2].z);
+    glVertex3f(hair.vertices[3].x, hair.vertices[3].y, hair.vertices[3].z);
 
     glEnd();
-
-    hairs.push_back(top_center);
-    hairs_drawn += 1;
   }
 }
 
@@ -402,12 +401,12 @@ void display(void) {
   /* center the model */
   glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);
 
-  /* if the display list has not been made yet, create a new one and
-     fill it with scene contents */
-  if (scene_list == 0) {
-    printf("Creating display list...\n");
-    scene_list = glGenLists(1);
-    glNewList(scene_list, GL_COMPILE);
+  // Create a display list for the human body and jacket objects,
+  // which never change.
+  if (human_display_list == 0) {
+    printf("Creating jacket and body display list...\n");
+    human_display_list = glGenLists(1);
+    glNewList(human_display_list, GL_COMPILE);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -417,12 +416,15 @@ void display(void) {
     glColor3f(0.25f, 0.25f, 0.25f);
     jacket_obj.Draw();
 
-    draw_random_hairs();
-
     glEndList();
+
+    // Create the randomized hairs
+    generate_random_hairs(1000);
   }
 
-  glCallList(scene_list);
+  glCallList(human_display_list);
+
+  draw_hairs();
 }
 
 typedef struct {
