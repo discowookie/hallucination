@@ -285,6 +285,9 @@ public:
   glm::vec3       top_center;
   glm::vec3       vertices[4];
   glm::vec3       color;
+
+  float           frequency;
+  float           phase;
 };
 
 static std::vector<Hair> hairs;
@@ -370,16 +373,23 @@ void generate_random_hairs(int num_hairs) {
     hair.vertices[1] = bottom_left;
     hair.vertices[2] = bottom_right;
     hair.vertices[3] = top_right;
+    hair.frequency = 5.0f * ((double) rand() / (RAND_MAX));
+    hair.phase = 3.14f * ((double) rand() / (RAND_MAX));
 
     hairs.push_back(hair);
   }
 }
 
 void draw_hairs() {
+  static double prev_time = 0;
+  double time = glfwGetTime();
+  prev_time = time;
+
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     Hair &hair = hairs[i];
 
-    double illumination = ((double)rand() / (RAND_MAX));
+    // double illumination = ((double)rand() / (RAND_MAX));
+    float illumination = sin(hair.frequency * time + hair.phase);
     glColor3f(illumination, illumination, illumination);
 
     glBegin(GL_QUADS);
@@ -419,7 +429,7 @@ void display(void) {
     glEndList();
 
     // Create the randomized hairs
-    generate_random_hairs(1000);
+    generate_random_hairs(2400);
   }
 
   glCallList(human_display_list);
