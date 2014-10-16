@@ -23,7 +23,7 @@ using namespace std;
 class Model_OBJ {
 public:
   Model_OBJ();
-  float *calculateNormal(float *coord1, float *coord2, float *coord3);
+  void calculateNormal(float *coord1, float *coord2, float *coord3, float* norm);
   int Load(char *filename); // Loads the model
   void Draw();              // Draws the model on the screen
   void Release();           // Release the model
@@ -31,6 +31,7 @@ public:
   float *normals;               // Stores the normals
   float *Faces_Triangles;       // Stores the triangles
   float *vertexBuffer;          // Stores the points which make the object
+  
   long TotalConnectedPoints;    // Stores the total number of connected verteces
   long TotalConnectedTriangles; // Stores the total number of connected
                                 // triangles
@@ -45,7 +46,8 @@ Model_OBJ::Model_OBJ() {
   this->TotalConnectedPoints = 0;
 }
 
-float *Model_OBJ::calculateNormal(float *coord1, float *coord2, float *coord3) {
+void Model_OBJ::calculateNormal(float *coord1, float *coord2, float *coord3,
+                                  float* norm) {
   /* calculate Vector1 and Vector2 */
   float va[3], vb[3], vr[3], val;
   va[0] = coord1[0] - coord2[0];
@@ -64,12 +66,9 @@ float *Model_OBJ::calculateNormal(float *coord1, float *coord2, float *coord3) {
   /* normalization factor */
   val = std::sqrt(vr[0] * vr[0] + vr[1] * vr[1] + vr[2] * vr[2]);
 
-  float norm[3];
   norm[0] = vr[0] / val;
   norm[1] = vr[1] / val;
   norm[2] = vr[2] / val;
-
-  return norm;
 }
 
 int Model_OBJ::Load(char *filename) {
@@ -84,12 +83,12 @@ int Model_OBJ::Load(char *filename) {
     objFile.seekg(
         0, ios::beg); // we'll use this to register memory for our 3d model
 
-    vertexBuffer =
-        (float *)malloc(fileSize); // Allocate memory for the verteces
-    Faces_Triangles = (float *)malloc(
-        fileSize * sizeof(float)); // Allocate memory for the triangles
-    normals = (float *)malloc(fileSize *
-                              sizeof(float)); // Allocate memory for the normals
+    // Allocate memory for the vertices
+    vertexBuffer = (float *)malloc(fileSize);
+    // Allocate memory for the triangles
+    Faces_Triangles = (float *)malloc(fileSize * sizeof(float));
+    // Allocate memory for the normals
+    normals = (float *)malloc(fileSize * sizeof(float));
 
     int triangle_index = 0; // Set triangle index to zero
     int normal_index = 0;   // Set normal index to zero
@@ -98,25 +97,24 @@ int Model_OBJ::Load(char *filename) {
     {
       getline(objFile, line); // Get line from file
 
-      if (line.c_str()[0] ==
-          'v') // The first character is a v: on this line is a vertex stored.
-      {
-        line[0] =
-            ' '; // Set first character to 0. This will allow us to use sscanf
+      // The first character is a v: on this line is a vertex stored.
+      if (line.c_str()[0] == 'v') {
+        // Set first character to 0. This will allow us to use sscanf
+        line[0] = ' ';
 
-        sscanf(line.c_str(), "%f %f %f ", // Read floats from the line: v X Y Z
-               &vertexBuffer[TotalConnectedPoints],
+        // Read floats from the line: v X Y Z
+        sscanf(line.c_str(), "%f %f %f ", &vertexBuffer[TotalConnectedPoints],
                &vertexBuffer[TotalConnectedPoints + 1],
                &vertexBuffer[TotalConnectedPoints + 2]);
 
-        TotalConnectedPoints +=
-            POINTS_PER_VERTEX; // Add 3 to the total connected points
+        // Add 3 to the total connected points
+        TotalConnectedPoints += POINTS_PER_VERTEX;
       }
-      if (line.c_str()[0] ==
-          'f') // The first character is an 'f': on this line is a point stored
-      {
-        line[0] =
-            ' '; // Set first character to 0. This will allow us to use sscanf
+
+      // The first character is an 'f': on this line is a point stored
+      if (line.c_str()[0] == 'f') {
+        // Set first character to 0. This will allow us to use sscanf
+        line[0] = ' ';
 
         int vertexNumber[4] = { 0, 0, 0 };
         sscanf(line.c_str(), "%i%i%i", // Read integers from the line:  f 1 2 3
@@ -146,9 +144,7 @@ int Model_OBJ::Load(char *filename) {
           tCounter += POINTS_PER_VERTEX;
         }
 
-        /*********************************************************************
-         * Calculate all normals, used for lighting
-         */
+        // Calculate normal for the face, used for lighting
         float coord1[3] = { Faces_Triangles[triangle_index],
                             Faces_Triangles[triangle_index + 1],
                             Faces_Triangles[triangle_index + 2] };
@@ -158,8 +154,10 @@ int Model_OBJ::Load(char *filename) {
         float coord3[3] = { Faces_Triangles[triangle_index + 6],
                             Faces_Triangles[triangle_index + 7],
                             Faces_Triangles[triangle_index + 8] };
-        float *norm = this->calculateNormal(coord1, coord2, coord3);
+        float norm[3];
+        this->calculateNormal(coord1, coord2, coord3, norm);
 
+        // Store the normal
         tCounter = 0;
         for (int i = 0; i < POINTS_PER_VERTEX; i++) {
           normals[normal_index + tCounter] = norm[0];
@@ -173,11 +171,16 @@ int Model_OBJ::Load(char *filename) {
         TotalConnectedTriangles += TOTAL_FLOATS_IN_TRIANGLE;
       }
     }
-    objFile.close(); // Close OBJ file
-    cout << "Read " << triangle_index << " triangles from OBJ file." << std::endl;
+
+    // Done! Close the file and report success.
+    objFile.close();
+    cout << "Read " << triangle_index << " vertices, " << normal_index
+         << " normals, " << TotalConnectedTriangles << " faces from OBJ file."
+         << std::endl;
   } else {
-    cout << "Unable to open file";
+    cout << "Unable to open file" << std::endl;
   }
+
   return 0;
 }
 

@@ -274,38 +274,91 @@ void do_motion(void) {
   }
 }
 
+#define TOTAL_FLOATS_IN_TRIANGLE 9
+
 void draw_random_hairs() {
   srand(time(NULL));
 
-  const int hairs_to_draw = 1000;
+  const int hairs_to_draw = 2400;
   int hairs_drawn = 0;
 
   while (hairs_drawn < hairs_to_draw) {
-    int total_vertices = human_obj.TotalConnectedPoints / 3;
-    int vertex_number = rand() % total_vertices;
-    float *vertex = &human_obj.vertexBuffer[vertex_number * 3];
+    // Pick a random face
+    int total_faces = human_obj.TotalConnectedTriangles / 9;
+    int face_number = rand() % total_faces;
 
-    // Make sure the point is on the torso
-    if (vertex[1] > 1.5f || vertex[1] < 1.0f
-     || fabs(vertex[0]) > 0.3f || fabs(vertex[2]) > 0.3f) {
-      continue;
-    }
+    // Choose the first vertex of the face
+    float *vertex = &human_obj.Faces_Triangles[face_number * TOTAL_FLOATS_IN_TRIANGLE];
+    glm::vec3 top_center(vertex[0], vertex[1], vertex[2]);
 
-    double illumination = ((double) rand() / (RAND_MAX));
-    glColor3f(illumination, illumination, illumination);
+    // Get the normal for that vertex.
+    float *normal_f = &human_obj.normals[face_number * TOTAL_FLOATS_IN_TRIANGLE];
+    glm::vec3 normal = glm::normalize(
+        glm::vec3(normal_f[0], normal_f[1], normal_f[2]));
+    printf("normal from file: %f %f %f\n", normal.x, normal.y, normal.z);
+
+    glm::vec3 A(vertex[0], vertex[1], vertex[2]);
+    glm::vec3 B(vertex[3], vertex[4], vertex[5]);
+    glm::vec3 C(vertex[6], vertex[7], vertex[8]);
+
+    normal = glm::normalize(glm::cross(B - A, C - A));
+    printf("computed normal: %f %f %f\n", normal.x, normal.y, normal.z);
+
+    // Cross the normal with the "straight down" direction to get a vector
+    // that points left, along the width of the hair.
+    glm::vec3 hair_left =
+        glm::normalize(glm::cross(normal, glm::vec3(0.0f, -1.0f, 0.0f)));
+
+    // Cross the left vector with the normal to obtain a vector along the
+    // length of the hair.
+    glm::vec3 hair_down = glm::normalize(glm::cross(hair_left, normal));
+
+    const float hair_width = 0.0127f;  // 0.5 inch
+    const float hair_height = 0.0762f; // 3 inches
+
+    glm::vec3 top_left = top_center - (hair_width / 2.0f) * hair_left;
+    glm::vec3 bottom_left = top_left + hair_height * hair_down;
+    glm::vec3 bottom_right = bottom_left + hair_width * hair_left;
+    glm::vec3 top_right = bottom_right - hair_height * hair_down;
+
+    printf("top_center %f %f %f\n", top_center.x, top_center.y, top_center.z);
+    printf("normal %f %f %f\n", normal.x, normal.y, normal.z);
+    printf("hair_left %f %f %f\n", hair_left.x, hair_left.y, hair_left.z);
+    printf("hair_down %f %f %f\n", hair_down.x, hair_down.y, hair_down.z);
+    printf("top_left %f %f %f\n", top_left.x, top_left.y, top_left.z);
+    printf("bottom_left %f %f %f\n", bottom_left.x, bottom_left.y,
+           bottom_left.z);
+    printf("bottom_right %f %f %f\n", bottom_right.x, bottom_right.y,
+           bottom_right.z);
+    printf("top_right %f %f %f\n", top_right.x, top_right.y, top_right.z);
+
+    double illumination = ((double)rand() / (RAND_MAX));
+    // glColor3f(illumination, illumination, illumination);
+
+    glBegin(GL_LINES);
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(top_center.x, top_center.y, top_center.z);
+    glm::vec3 end = top_center + normal;
+    printf("end point %f %f %f\n", end.x, end.y, end.z);
+    glVertex3f(end.x, end.y, end.z);
+    glEnd();
 
     // TODO(wcraddock): Make sure each hair is not too close to another
     // TODO(wcraddock): Get normal at that point
     // TODO(wcraddock): Add lighting
-    
-    const float hair_width = 0.0127f;
-    const float hair_height = 0.0762f;
 
     glBegin(GL_QUADS);
-    glVertex3f(vertex[0], vertex[1], vertex[2]); // top left
-    glVertex3f(vertex[0], vertex[1] - hair_height, vertex[2]); // bottom left
-    glVertex3f(vertex[0] + hair_width, vertex[1] - hair_height, vertex[2]); // bottom right
-    glVertex3f(vertex[0] + hair_width, vertex[1], vertex[2]); // top right
+    // glVertex3f(vertex[0], vertex[1], vertex[2]);               // top left
+    // glVertex3f(vertex[0], vertex[1] - hair_height, vertex[2]); // bottom left
+    // glVertex3f(vertex[0] + hair_width, vertex[1] - hair_height,
+    //            vertex[2]);                                    // bottom right
+    // glVertex3f(vertex[0] + hair_width, vertex[1], vertex[2]); // top right
+
+    glVertex3f(top_left.x, top_left.y, top_left.z);
+    glVertex3f(bottom_left.x, bottom_left.y, bottom_left.z);
+    glVertex3f(bottom_right.x, bottom_right.y, bottom_right.z);
+    glVertex3f(top_right.x, top_right.y, top_right.z);
+
     glEnd();
 
     hairs_drawn += 1;
@@ -384,7 +437,7 @@ void initialize() {
 
 int main(void) {
   printf("Calling obj.Load()...\n");
-  human_obj.Load("cody_simple.obj");
+  human_obj.Load("models/tshirt_long.obj");
 
   if (!glfwInit())
     exit(EXIT_FAILURE);
@@ -394,7 +447,8 @@ int main(void) {
   glfwWindowHint(GLFW_SAMPLES, 4);
 
   printf("Creating OpenGL window...\n");
-  GLFWwindow *window = glfwCreateWindow(window_width, window_height, "Simple example", NULL, NULL);
+  GLFWwindow *window = glfwCreateWindow(window_width, window_height,
+                                        "Simple example", NULL, NULL);
   if (!window) {
     printf("Oh noes!\n");
     glfwTerminate();
