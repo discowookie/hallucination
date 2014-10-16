@@ -20,6 +20,8 @@ using namespace glm;
 #include "common/controls.hpp"
 #include "common/obj_reader.h"
 
+#include <vector>
+
 static int window_width = 1024.0f;
 static int window_height = 768.0f;
 
@@ -276,30 +278,55 @@ void do_motion(void) {
 
 #define TOTAL_FLOATS_IN_TRIANGLE 9
 
+float find_closest_hair(glm::vec3& vertex, std::vector<glm::vec3>& hairs) {
+  float min_distance = FLT_MAX;
+
+  for (unsigned int i = 0; i < hairs.size(); ++i) {
+    float distance = glm::length(vertex - hairs[i]);
+    if (distance < min_distance) {
+      min_distance = distance;
+    }
+  }
+
+  return min_distance;
+}
+
 void draw_random_hairs() {
   srand(time(NULL));
 
   const int hairs_to_draw = 2400;
   int hairs_drawn = 0;
 
+  // Keep track of the all hair locations that have already been selected.
+  std::vector<glm::vec3> hairs;
+
   while (hairs_drawn < hairs_to_draw) {
     // Pick a random face
     int total_faces = human_obj.TotalConnectedTriangles / 9;
     int face_number = rand() % total_faces;
 
-    // Choose the first vertex of the face
+    // Get the three vertices of the face
     float *vertex = &human_obj.Faces_Triangles[face_number * TOTAL_FLOATS_IN_TRIANGLE];
-    glm::vec3 top_center(vertex[0], vertex[1], vertex[2]);
+    glm::vec3 A(vertex[0], vertex[1], vertex[2]);
+    glm::vec3 B(vertex[3], vertex[4], vertex[5]);
+    glm::vec3 C(vertex[6], vertex[7], vertex[8]);
+
+    // Choose a point somewhere on the face for the hair's location
+    float r1 = ((double) rand() / (RAND_MAX));
+    float r2 = ((double) rand() / (RAND_MAX));
+    glm::vec3 top_center = A + r1 * (B - A) + r2 * (C - A);
+
+    // If the point is too close to an existing hair, try again.
+    float closest_hair = find_closest_hair(top_center, hairs);
+    if (closest_hair < 0.0127f) {
+      continue;
+    }
 
     // Get the normal for that vertex.
     float *normal_f = &human_obj.normals[face_number * TOTAL_FLOATS_IN_TRIANGLE];
     glm::vec3 normal = glm::normalize(
         glm::vec3(normal_f[0], normal_f[1], normal_f[2]));
     printf("normal from file: %f %f %f\n", normal.x, normal.y, normal.z);
-
-    glm::vec3 A(vertex[0], vertex[1], vertex[2]);
-    glm::vec3 B(vertex[3], vertex[4], vertex[5]);
-    glm::vec3 C(vertex[6], vertex[7], vertex[8]);
 
     normal = glm::normalize(glm::cross(B - A, C - A));
     printf("computed normal: %f %f %f\n", normal.x, normal.y, normal.z);
@@ -333,15 +360,15 @@ void draw_random_hairs() {
     printf("top_right %f %f %f\n", top_right.x, top_right.y, top_right.z);
 
     double illumination = ((double)rand() / (RAND_MAX));
-    // glColor3f(illumination, illumination, illumination);
+    glColor3f(illumination, illumination, illumination);
 
-    glBegin(GL_LINES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(top_center.x, top_center.y, top_center.z);
-    glm::vec3 end = top_center + normal;
-    printf("end point %f %f %f\n", end.x, end.y, end.z);
-    glVertex3f(end.x, end.y, end.z);
-    glEnd();
+    // glBegin(GL_LINES);
+    // glColor3f(1.0f, 0.0f, 0.0f);
+    // glVertex3f(top_center.x, top_center.y, top_center.z);
+    // glm::vec3 end = top_center + normal;
+    // printf("end point %f %f %f\n", end.x, end.y, end.z);
+    // glVertex3f(end.x, end.y, end.z);
+    // glEnd();
 
     // TODO(wcraddock): Make sure each hair is not too close to another
     // TODO(wcraddock): Get normal at that point
@@ -361,6 +388,7 @@ void draw_random_hairs() {
 
     glEnd();
 
+    hairs.push_back(top_center);
     hairs_drawn += 1;
   }
 }
