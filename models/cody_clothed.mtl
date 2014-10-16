@@ -1,0 +1,29 @@
+# MakeHuman exported MTL
+# www.makehuman.org
+
+
+newmtl DefaultSkin
+Kd 0.8028 0.6074 0.4885
+Ks 0.3 0.3 0.3
+d 1
+
+newmtl Eye_brown
+Kd 1 1 1
+Ks 1 1 1
+d 0
+map_Kd textures/brown_eye.png
+map_D textures/brown_eye.png
+
+newmtl TShirtWhite
+Kd 1 1 1
+Ks 0.07059 0.07059 0.07059
+d 0
+map_Kd textures/tshirt_texture_white.png
+map_D textures/tshirt_texture_white.png
+
+newmtl jeans01Material
+Kd 1 1 1
+Ks 0.02745 0.02745 0.02745
+d 0
+map_Kd textures/jeans_basic_diffuse.png
+map_D textures/jeans_basic_diffuse.png
