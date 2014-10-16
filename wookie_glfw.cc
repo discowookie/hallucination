@@ -36,8 +36,9 @@ const aiScene *scene = NULL;
 GLuint scene_list = 0;
 aiVector3D scene_min, scene_max, scene_center;
 
-// The human body object, from file cody.obj
-Model_OBJ human_obj;
+// Models for the human body and for the jacket.
+Model_OBJ human_body_obj;
+Model_OBJ jacket_obj;
 
 static void error_callback(int error, const char *description) {
   fputs(description, stderr);
@@ -302,11 +303,11 @@ void draw_random_hairs() {
 
   while (hairs_drawn < hairs_to_draw) {
     // Pick a random face
-    int total_faces = human_obj.TotalConnectedTriangles / 9;
+    int total_faces = jacket_obj.TotalConnectedTriangles / 9;
     int face_number = rand() % total_faces;
 
     // Get the three vertices of the face
-    float *vertex = &human_obj.Faces_Triangles[face_number * TOTAL_FLOATS_IN_TRIANGLE];
+    float *vertex = &jacket_obj.Faces_Triangles[face_number * TOTAL_FLOATS_IN_TRIANGLE];
     glm::vec3 A(vertex[0], vertex[1], vertex[2]);
     glm::vec3 B(vertex[3], vertex[4], vertex[5]);
     glm::vec3 C(vertex[6], vertex[7], vertex[8]);
@@ -323,7 +324,7 @@ void draw_random_hairs() {
     }
 
     // Get the normal for that vertex.
-    float *normal_f = &human_obj.normals[face_number * TOTAL_FLOATS_IN_TRIANGLE];
+    float *normal_f = &jacket_obj.normals[face_number * TOTAL_FLOATS_IN_TRIANGLE];
     glm::vec3 normal = glm::normalize(
         glm::vec3(normal_f[0], normal_f[1], normal_f[2]));
     printf("normal from file: %f %f %f\n", normal.x, normal.y, normal.z);
@@ -409,8 +410,12 @@ void display(void) {
     glNewList(scene_list, GL_COMPILE);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glColor3f(1.0f, 0.86f, 0.69f);
-    human_obj.Draw();
+    human_body_obj.Draw();
+
+    glColor3f(0.25f, 0.25f, 0.25f);
+    jacket_obj.Draw();
 
     draw_random_hairs();
 
@@ -464,8 +469,9 @@ void initialize() {
 }
 
 int main(void) {
-  printf("Calling obj.Load()...\n");
-  human_obj.Load("models/tshirt_long.obj");
+  printf("Loading OBJ files...\n");
+  human_body_obj.Load("models/male1591.obj");
+  jacket_obj.Load("models/tshirt_long.obj");
 
   if (!glfwInit())
     exit(EXIT_FAILURE);
