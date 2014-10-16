@@ -39,6 +39,7 @@ aiVector3D scene_min, scene_max, scene_center;
 // Models for the human body and for the jacket.
 Model_OBJ human_body_obj;
 Model_OBJ jacket_obj;
+Model_OBJ jeans_obj;
 
 static void error_callback(int error, const char *description) {
   fputs(description, stderr);
@@ -75,6 +76,7 @@ void get_bounding_box_for_node(const aiNode *nd, aiVector3D *min,
       min->x = aisgl_min(min->x, tmp.x);
       min->y = aisgl_min(min->y, tmp.y);
       min->z = aisgl_min(min->z, tmp.z);
+      
 
       max->x = aisgl_max(max->x, tmp.x);
       max->y = aisgl_max(max->y, tmp.y);
@@ -423,6 +425,9 @@ void display(void) {
     glColor3f(1.0f, 0.86f, 0.69f);
     human_body_obj.Draw();
 
+    glColor3f(0.14f, 0.25f, 0.32f);
+    jeans_obj.Draw();
+
     glColor3f(0.25f, 0.25f, 0.25f);
     jacket_obj.Draw();
 
@@ -484,6 +489,7 @@ int main(void) {
   printf("Loading OBJ files...\n");
   human_body_obj.Load("models/male1591.obj");
   jacket_obj.Load("models/tshirt_long.obj");
+  jeans_obj.Load("models/jeans01.obj");
 
   if (!glfwInit())
     exit(EXIT_FAILURE);
