@@ -8,6 +8,7 @@
 
 #define GLM_FORCE_RADIANS
 #include "glm/glm.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
 #include <assimp/cimport.h>
@@ -76,7 +77,6 @@ void get_bounding_box_for_node(const aiNode *nd, aiVector3D *min,
       min->x = aisgl_min(min->x, tmp.x);
       min->y = aisgl_min(min->y, tmp.y);
       min->z = aisgl_min(min->z, tmp.z);
-      
 
       max->x = aisgl_max(max->x, tmp.x);
       max->y = aisgl_max(max->y, tmp.y);
@@ -284,17 +284,17 @@ void do_motion(void) {
 // Keep track of the all hair locations that have already been selected.
 class Hair {
 public:
-  glm::vec3       top_center;
-  glm::vec3       vertices[4];
-  glm::vec3       color;
+  glm::vec3 top_center;
+  glm::vec3 vertices[4];
+  glm::vec3 color;
 
-  float           frequency;
-  float           phase;
+  float frequency;
+  float phase;
 };
 
 static std::vector<Hair> hairs;
 
-float find_closest_hair(glm::vec3& vertex) {
+float find_closest_hair(glm::vec3 &vertex) {
   float min_distance = FLT_MAX;
 
   for (unsigned int i = 0; i < hairs.size(); ++i) {
@@ -316,14 +316,15 @@ void generate_random_hairs(int num_hairs) {
     int face_number = rand() % total_faces;
 
     // Get the three vertices of the face
-    float *vertex = &jacket_obj.Faces_Triangles[face_number * TOTAL_FLOATS_IN_TRIANGLE];
+    float *vertex =
+        &jacket_obj.Faces_Triangles[face_number * TOTAL_FLOATS_IN_TRIANGLE];
     glm::vec3 A(vertex[0], vertex[1], vertex[2]);
     glm::vec3 B(vertex[3], vertex[4], vertex[5]);
     glm::vec3 C(vertex[6], vertex[7], vertex[8]);
 
     // Choose a point somewhere on the face for the hair's location
-    float r1 = ((double) rand() / (RAND_MAX));
-    float r2 = ((double) rand() / (RAND_MAX));
+    float r1 = ((double)rand() / (RAND_MAX));
+    float r2 = ((double)rand() / (RAND_MAX));
     glm::vec3 top_center = A + r1 * (B - A) + r2 * (C - A);
 
     // If the point is too close to an existing hair, try again.
@@ -333,9 +334,10 @@ void generate_random_hairs(int num_hairs) {
     }
 
     // Get the normal for that vertex.
-    float *normal_f = &jacket_obj.normals[face_number * TOTAL_FLOATS_IN_TRIANGLE];
-    glm::vec3 normal = glm::normalize(
-        glm::vec3(normal_f[0], normal_f[1], normal_f[2]));
+    float *normal_f =
+        &jacket_obj.normals[face_number * TOTAL_FLOATS_IN_TRIANGLE];
+    glm::vec3 normal =
+        glm::normalize(glm::vec3(normal_f[0], normal_f[1], normal_f[2]));
     // printf("normal from file: %f %f %f\n", normal.x, normal.y, normal.z);
 
     normal = glm::normalize(glm::cross(B - A, C - A));
@@ -358,7 +360,8 @@ void generate_random_hairs(int num_hairs) {
     glm::vec3 bottom_right = bottom_left + hair_width * hair_left;
     glm::vec3 top_right = bottom_right - hair_height * hair_down;
 
-    // printf("top_center %f %f %f\n", top_center.x, top_center.y, top_center.z);
+    // printf("top_center %f %f %f\n", top_center.x, top_center.y,
+    // top_center.z);
     // printf("normal %f %f %f\n", normal.x, normal.y, normal.z);
     // printf("hair_left %f %f %f\n", hair_left.x, hair_left.y, hair_left.z);
     // printf("hair_down %f %f %f\n", hair_down.x, hair_down.y, hair_down.z);
@@ -375,8 +378,8 @@ void generate_random_hairs(int num_hairs) {
     hair.vertices[1] = bottom_left;
     hair.vertices[2] = bottom_right;
     hair.vertices[3] = top_right;
-    hair.frequency = 5.0f * ((double) rand() / (RAND_MAX));
-    hair.phase = 3.14f * ((double) rand() / (RAND_MAX));
+    hair.frequency = 5.0f * ((double)rand() / (RAND_MAX));
+    hair.phase = 3.14f * ((double)rand() / (RAND_MAX));
 
     hairs.push_back(hair);
   }
@@ -437,8 +440,8 @@ void display(void) {
     generate_random_hairs(2400);
   }
 
+  // Draw the human (and clothing) and hairs.
   glCallList(human_display_list);
-
   draw_hairs();
 }
 
@@ -525,7 +528,8 @@ int main(void) {
     computeMatricesFromInputs(window);
     glm::mat4 ProjectionMatrix = getProjectionMatrix();
     glm::mat4 ViewMatrix = getViewMatrix();
-    glm::mat4 ModelMatrix = glm::mat4(1.0);
+    glm::mat4 ModelMatrix = glm::rotate(glm::mat4(1.0), getModelAngle(),
+                                        glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 MV = ViewMatrix * ModelMatrix;
 
     // Set the MVP matrix
