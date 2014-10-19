@@ -24,8 +24,7 @@ def write_output_to_file():
   print("About to write %d faces to file with name %s" %
               (len(faces), group_name))
   with open(group_name, 'w') as file:
-    file.write('\n'.join(vertices))
-    file.write('\n'.join(faces))
+    file.write('\n'.join(vertices + faces))
 
 with open(sys.argv[1], 'r') as file:
   for line in file:
