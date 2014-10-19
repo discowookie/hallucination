@@ -39,6 +39,7 @@ aiVector3D scene_min, scene_max, scene_center;
 
 // Models for the human body and for the jacket.
 Model_OBJ human_body_obj;
+Model_OBJ eyes_obj;
 Model_OBJ jacket_obj;
 Model_OBJ jeans_obj;
 Model_OBJ shoes_obj;
@@ -436,6 +437,10 @@ void display(void) {
     glColor3f(1.0f, 0.86f, 0.69f);
     human_body_obj.Draw();
 
+    // // Draw the eyes in a ??? color.
+    // glColor3f(1.0f, 1.0f, 1.0f);
+    // eyes_obj.Draw();
+
     // Draw the fedora in a dark charcoal color.
     glColor3f(0.25f, 0.25f, 0.25f);
     fedora_obj.Draw();
@@ -509,10 +514,11 @@ void initialize() {
 int main(void) {
   printf("Loading OBJ files...\n");
   human_body_obj.Load("models/male1591.obj");
+  eyes_obj.Load("models/high-poly.obj");
   jacket_obj.Load("models/tshirt_long.obj");
   jeans_obj.Load("models/jeans01.obj");
-  fedora_obj.Load("models/fedora.obj");
-  shoes_obj.Load("models/shoes01_hres.obj");
+  fedora_obj.Load("models/fedora_cocked.obj");
+  shoes_obj.Load("models/shoes02.obj");
 
   if (!glfwInit())
     exit(EXIT_FAILURE);
