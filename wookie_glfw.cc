@@ -41,6 +41,8 @@ aiVector3D scene_min, scene_max, scene_center;
 Model_OBJ human_body_obj;
 Model_OBJ jacket_obj;
 Model_OBJ jeans_obj;
+Model_OBJ shoes_obj;
+Model_OBJ fedora_obj;
 
 static void error_callback(int error, const char *description) {
   fputs(description, stderr);
@@ -434,6 +436,10 @@ void display(void) {
     glColor3f(1.0f, 0.86f, 0.69f);
     human_body_obj.Draw();
 
+    // Draw the fedora in a dark charcoal color.
+    glColor3f(0.25f, 0.25f, 0.25f);
+    fedora_obj.Draw();
+
     // Draw the jeans in a blue color.
     glColor3f(0.14f, 0.25f, 0.32f);
     jeans_obj.Draw();
@@ -441,6 +447,10 @@ void display(void) {
     // Draw the jacket in a dark charcoal color.
     glColor3f(0.25f, 0.25f, 0.25f);
     jacket_obj.Draw();
+
+    // Draw the jacket in a dark charcoal color.
+    glColor3f(0.25f, 0.25f, 0.25f);
+    shoes_obj.Draw();
 
     glEndList();
 
@@ -501,6 +511,8 @@ int main(void) {
   human_body_obj.Load("models/male1591.obj");
   jacket_obj.Load("models/tshirt_long.obj");
   jeans_obj.Load("models/jeans01.obj");
+  fedora_obj.Load("models/fedora.obj");
+  shoes_obj.Load("models/shoes01_hres.obj");
 
   if (!glfwInit())
     exit(EXIT_FAILURE);
