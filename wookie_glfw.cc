@@ -388,14 +388,27 @@ void generate_random_hairs(int num_hairs) {
 }
 
 void draw_hairs() {
+  static int lit_hair = 0;
+  static double last_hair_change_time = 0;
+
   static double prev_time = 0;
   double time = glfwGetTime();
-  prev_time = time;
 
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     Hair &hair = hairs[i];
 
-    float illumination = sin(hair.frequency * time + hair.phase);
+    float illumination = 0.0f;
+
+    if (inPhotogrammetryMode()) {
+      if (time - last_hair_change_time > 0.1f) {
+        lit_hair = (lit_hair + 1) % hairs.size();
+        last_hair_change_time = time;
+      }
+
+      illumination = (i == lit_hair) ? 1.0f : 0.0f;
+    } else {
+      illumination = sin(hair.frequency * time + hair.phase);
+    }
 
     // Set the emission intensity of the hair.
     // TODO(wcraddock): this might be slow. Does it matter?
@@ -409,6 +422,8 @@ void draw_hairs() {
     glVertex3f(hair.vertices[3].x, hair.vertices[3].y, hair.vertices[3].z);
     glEnd();
   }
+
+  prev_time = time;
 }
 
 void display(void) {
@@ -455,7 +470,7 @@ void display(void) {
     glEndList();
 
     // Create the randomized hairs
-    generate_random_hairs(2400);
+    generate_random_hairs(1200);
   }
 
   // Draw the human (and clothing), then the hairs.

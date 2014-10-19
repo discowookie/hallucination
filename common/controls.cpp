@@ -38,9 +38,12 @@ static float model_angle = 0.0f;
 static glm::mat4 ViewMatrix;
 static glm::mat4 ProjectionMatrix;
 
+static bool photogrammetryMode = false;
+
 glm::mat4 getViewMatrix() { return ViewMatrix; }
 glm::mat4 getProjectionMatrix() { return ProjectionMatrix; }
 float getModelAngle() { return model_angle; }
+bool inPhotogrammetryMode() { return photogrammetryMode; }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods) {
@@ -83,6 +86,11 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
       glEnable(GL_LIGHT0);
     }
     lights_on = !lights_on;
+  }
+
+  // Turn photogrammetry mode on and off
+  if (key == GLFW_KEY_P && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    photogrammetryMode = !photogrammetryMode;
   }
 
   // // Strafe right
