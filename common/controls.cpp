@@ -74,6 +74,17 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     // printf("Model angle is now %f\n", model_angle);
   }
 
+  // Turn lights on and off
+  if (key == GLFW_KEY_L && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    static bool lights_on = true;
+    if (lights_on) {
+      glDisable(GL_LIGHT0);
+    } else {
+      glEnable(GL_LIGHT0);
+    }
+    lights_on = !lights_on;
+  }
+
   // // Strafe right
   // if (key == GLFW_KEY_RIGHT &&
   //     (action == GLFW_PRESS || action == GLFW_REPEAT)) {
