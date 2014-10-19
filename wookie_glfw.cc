@@ -393,27 +393,26 @@ void draw_hairs() {
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     Hair &hair = hairs[i];
 
-    // double illumination = ((double)rand() / (RAND_MAX));
     float illumination = sin(hair.frequency * time + hair.phase);
-    glColor3f(illumination, illumination, illumination);
+
+    // Set the emission intensity of the hair.
+    // TODO(wcraddock): this might be slow. Does it matter?
+    GLfloat color[3] = {illumination, illumination, illumination};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, color);
 
     glBegin(GL_QUADS);
-
     glVertex3f(hair.vertices[0].x, hair.vertices[0].y, hair.vertices[0].z);
     glVertex3f(hair.vertices[1].x, hair.vertices[1].y, hair.vertices[1].z);
     glVertex3f(hair.vertices[2].x, hair.vertices[2].y, hair.vertices[2].z);
     glVertex3f(hair.vertices[3].x, hair.vertices[3].y, hair.vertices[3].z);
-
     glEnd();
   }
 }
 
 void display(void) {
-  float tmp;
-
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  /* center the model */
+  // Center the model.
   glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);
 
   // Create a display list for the human body and jacket objects,
@@ -425,12 +424,21 @@ void display(void) {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Set the emission of these polygons to zero; they'll be lit by diffuse
+    // and ambient light.
+    GLfloat black[3] = {0.0f, 0.0f, 0.0f};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, black);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+    // Draw the body in a skin-tone color.
     glColor3f(1.0f, 0.86f, 0.69f);
     human_body_obj.Draw();
 
+    // Draw the jeans in a blue color.
     glColor3f(0.14f, 0.25f, 0.32f);
     jeans_obj.Draw();
 
+    // Draw the jacket in a dark charcoal color.
     glColor3f(0.25f, 0.25f, 0.25f);
     jacket_obj.Draw();
 
@@ -440,7 +448,7 @@ void display(void) {
     generate_random_hairs(2400);
   }
 
-  // Draw the human (and clothing) and hairs.
+  // Draw the human (and clothing), then the hairs.
   glCallList(human_display_list);
   draw_hairs();
 }
