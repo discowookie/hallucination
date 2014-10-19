@@ -470,7 +470,7 @@ void display(void) {
     glEndList();
 
     // Create the randomized hairs
-    generate_random_hairs(1200);
+    generate_random_hairs(2400);
   }
 
   // Draw the human (and clothing), then the hairs.
