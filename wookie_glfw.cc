@@ -527,6 +527,10 @@ int main(void) {
   // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
+  // Call the cursor callback once, so it'll set up the view matrix.
+  // TODO(wcraddock): this should probably be in an init() function somewhere.
+  cursor_position_callback(window, 0, 0);
+
   printf("Calling initialize()...\n");
   initialize();
 

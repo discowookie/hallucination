@@ -17,10 +17,10 @@ static float window_height = 768.0f;
 const float comparison_epsilon = 0.001;
 
 // Camera position, angle, and field-of-view.
-static glm::vec3 camera_position = glm::vec3(0, 1.4f, 1.0f);
+static glm::vec3 camera_position = glm::vec3(0, 1.4f, 2.0f);
 static float horizontalAngle = 3.14f;
 static float verticalAngle = 0.0f;
-static float initialFoV = 90.0f;
+static float initialFoV = 60.0f;
 
 // Viewer's direction, plus her up and right vectors.
 static glm::vec3 direction;
