@@ -1,0 +1,24 @@
+/Users/warren/Downloads/glfw-3.0.4/examples/CMakeFiles/Boing.dir
+/Users/warren/Downloads/glfw-3.0.4/examples/CMakeFiles/Gears.dir
+/Users/warren/Downloads/glfw-3.0.4/examples/CMakeFiles/Simple.dir
+/Users/warren/Downloads/glfw-3.0.4/examples/CMakeFiles/Split View.dir
+/Users/warren/Downloads/glfw-3.0.4/examples/CMakeFiles/Wave.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/accuracy.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/clipboard.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/defaults.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/events.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/fsaa.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/gamma.dir
+/Users/warren/Downloads/glfw-3.0.4/src/CMakeFiles/glfw.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/glfwinfo.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/iconify.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/joysticks.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/modes.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/peter.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/reopen.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/sharing.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/tearing.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/threads.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/title.dir
+/Users/warren/Downloads/glfw-3.0.4/CMakeFiles/uninstall.dir
+/Users/warren/Downloads/glfw-3.0.4/tests/CMakeFiles/windows.dir
