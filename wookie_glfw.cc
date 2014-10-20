@@ -12,6 +12,8 @@ using namespace glm;
 
 // Aubio includes
 #include <aubio/aubio.h>
+#include <aubio/fvec.h>
+#include <aubio/onset/onset.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,6 +41,12 @@ Model_OBJ eyes_obj;
 Model_OBJ jacket_obj;
 Model_OBJ jeans_obj;
 Model_OBJ shoes_obj;
+
+fvec_t *onset;
+aubio_onset_t *onset_obj;
+
+aubio_tempo_t *tempo_obj;
+fvec_t * tempo_out;
 
 static void error_callback(int error, const char *description) {
   fputs(description, stderr);
@@ -168,21 +176,36 @@ void draw_hairs() {
   static double prev_time = 0;
   double time = glfwGetTime();
 
+  static float global_illumination = 0.0f;
+
+  smpl_t is_onset = fvec_get_sample(onset, 0);
+  smpl_t is_beat = fvec_get_sample (tempo_out, 0);
+
+  global_illumination = is_beat ? 1.0f : global_illumination * (15.0f / 16.0f);
+
+  if (is_beat) {
+    static int num_beats = 0;
+    printf("beat %d!\n", num_beats++);
+  }
+
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     Hair &hair = hairs[i];
 
     float illumination = 0.0f;
 
-    if (inPhotogrammetryMode()) {
-      if (time - last_hair_change_time > 0.1f) {
-        lit_hair = (lit_hair + 1) % hairs.size();
-        last_hair_change_time = time;
-      }
+    // if (inPhotogrammetryMode()) {
+    //   if (time - last_hair_change_time > 0.1f) {
+    //     lit_hair = (lit_hair + 1) % hairs.size();
+    //     last_hair_change_time = time;
+    //   }
 
-      illumination = (i == lit_hair) ? 1.0f : 0.0f;
-    } else {
-      illumination = sin(hair.frequency * time + hair.phase);
-    }
+    //   illumination = (i == lit_hair) ? 1.0f : 0.0f;
+    // } else {
+    //   illumination = sin(hair.frequency * time + hair.phase);
+    // }
+    
+    // printf("illumination is %f\n", illumination);
+    illumination = global_illumination;
 
     // Set the emission intensity of the hair.
     // TODO(wcraddock): this might be slow. Does it matter?
@@ -296,6 +319,8 @@ typedef struct {
   float right_phase;
 } paTestData;
 
+float* overlap_buffer;
+
 /* This routine will be called by the PortAudio engine when audio is needed.
    It may called at interrupt level on some machines so don't do anything
    that could mess up the system like calling malloc() or free().
@@ -305,31 +330,18 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
                           const PaStreamCallbackTimeInfo *timeInfo,
                           PaStreamCallbackFlags statusFlags, void *userData) {
   float *in = (float *)inputBuffer;
+  
+  // Copy the last half of the buffer to the front half.
+  int winsize = 1024;
+  memcpy(&overlap_buffer[0], &overlap_buffer[winsize/2], sizeof(float) * (winsize/2));
 
-  for (int i = 0; i < framesPerBuffer; i++) {
-    printf("in[0] %f\n", in[0]);
+  // Copy the new data in to the last half of the overlap buffer.
+  memcpy(&overlap_buffer[winsize/2], in, sizeof(float) * (winsize/2));
 
-    // set window size, and sampling rate
-    uint_t winsize = 1024, sr = 44100;
-    // create a vector
-    fvec_t *this_buffer = new_fvec (winsize);
-    // create the a-weighting filter
-    aubio_filter_t *this_filter = new_aubio_filter_a_weighting (sr);
-    // while (running) {
-    //   // here some code to put some data in this_buffer
-    //   // ...
-    //   // apply the filter, in place
-    //   aubio_filter_do (this_filter, this_buffer);
-    //   // here some code to get some data from this_buffer
-    //   // ...
-    // }
-    // and free the structures
-    del_aubio_filter (this_filter);
-    del_fvec (this_buffer);
-
-    // onset detection
-    // aubio_onset_t *onset = new_aubio_onset (method, winsize, stepsize, samplerate);
-  }
+  fvec_t in_vec = { winsize, overlap_buffer };
+  aubio_onset_do(onset_obj, &in_vec, onset);
+  aubio_tempo_do (tempo_obj, &in_vec, tempo_out);
+  // is_beat = fvec_get_sample (tempo_out, 0);
 
   return 0;
 }
@@ -344,13 +356,17 @@ int initialize_audio() {
     return err;
   }
 
+  uint_t winsize = 1024;
+  uint_t stepsize = winsize/2;
+  uint_t sr = SAMPLE_RATE;
+
   /* Open an audio I/O stream. */
   PaStream *stream;
   err = Pa_OpenDefaultStream(
       &stream, 1,       /* mono input */
       0,                /* no output channels */
       paFloat32,        /* 32 bit floating point output */
-      SAMPLE_RATE, 256, /* frames per buffer, i.e. the number
+      SAMPLE_RATE, winsize, /* frames per buffer, i.e. the number
                                of sample frames that PortAudio will
                                request from the callback. Many apps
                                may want to use
@@ -359,12 +375,26 @@ int initialize_audio() {
                                possibly changing, buffer size.*/
       patestCallback, /* this is your callback function */
       &data);         /*This is a pointer that will be passed to
-        your callback*/
+                        your callback*/
   if (err != paNoError)
     return err;
 
+  // Start the input audio stream
   err = Pa_StartStream(stream);
 
+  // Onset detection
+  onset = new_fvec (1);
+  onset_obj = new_aubio_onset("default", winsize, stepsize, SAMPLE_RATE);
+  aubio_onset_set_threshold (onset_obj, 0.0f);
+  aubio_onset_set_silence (onset_obj, -90.0f);
+
+  // Tempo detection
+  tempo_out = new_fvec(2);
+  overlap_buffer = new float[winsize];
+  tempo_obj = new_aubio_tempo ("default", winsize, stepsize, SAMPLE_RATE);
+  aubio_tempo_set_threshold (tempo_obj, -10.0f);
+  // aubio_tempo_set_silence (tempo_obj, -90.0f);
+  
   return err;
 }
 
