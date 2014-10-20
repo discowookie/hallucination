@@ -1,6 +1,8 @@
 #ifndef __HALLUCINATION_H__
 #define __HALLUCINATION_H__
 
+#include <vector>
+
 // Disco Wookie includes
 #include "hair.h"
 #include "controller.h"
@@ -40,13 +42,12 @@ public:
   ~Hallucination();
 
   void Init();
-  void Run();
+  void MainLoop();
 
 private:
   void LoadModels();
   void CreateOpenGLWindow();
-
-  Controller controller_;
+  void SetupLighting();
 
   int window_width_;
   int window_height_;
@@ -63,6 +64,9 @@ private:
   Model_OBJ jacket_obj_;
   Model_OBJ jeans_obj_;
   Model_OBJ shoes_obj_;
+
+  // This is a list of all the Hairs that are distributed all over the jacket.
+  std::vector<Hair> hairs;
 
   // // Aubio onset detector and state.
   // fvec_t *onset_out_;

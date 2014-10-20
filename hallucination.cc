@@ -3,6 +3,7 @@
 void Hallucination::Init() {
   LoadModels();
   CreateOpenGLWindow();
+  SetupLighting();
 }
 
 void Hallucination::LoadModels() {
@@ -33,8 +34,7 @@ void Hallucination::CreateOpenGLWindow() {
 
   glfwMakeContextCurrent(window);
 
-  controller_.RegisterCallbacks(window);
-
+  Controller::getInstance().RegisterCallbacks(window);
   glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
 
   // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -46,6 +46,31 @@ void Hallucination::CreateOpenGLWindow() {
   // cursor_position_callback(window, 0, 0);
 }
 
-void Hallucination::Run() {}
+void Hallucination::SetupLighting() {
+  // Set up z-buffering
+  glShadeModel(GL_SMOOTH);
+  glClearColor(0.0f, 0.1f, 0.0f, 0.5f);
+  glClearDepth(1.0f);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LEQUAL);
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+  // Set up lighting
+  GLfloat amb_light[] = { 0.1, 0.1, 0.1, 1.0 };
+  GLfloat diffuse[] = { 0.6, 0.6, 0.6, 1 };
+  GLfloat specular[] = { 0.7, 0.7, 0.3, 1 };
+  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb_light);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+  glEnable(GL_LIGHT0);
+  glEnable(GL_COLOR_MATERIAL);
+  glShadeModel(GL_SMOOTH);
+  glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+  glDepthFunc(GL_LEQUAL);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_LIGHTING);
+}
+
+void Hallucination::MainLoop() {}
 
 Hallucination::~Hallucination() {}
