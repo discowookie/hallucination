@@ -1,15 +1,14 @@
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/glut.h>
-#endif
-
+// GLWFW includes
 #include <GLFW/glfw3.h>
 
+// GLM includes
 #define GLM_FORCE_RADIANS
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
+
+// PortAudio includes
+#include "portaudio.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -184,7 +183,7 @@ void draw_hairs() {
 
     // Set the emission intensity of the hair.
     // TODO(wcraddock): this might be slow. Does it matter?
-    GLfloat color[3] = {illumination, illumination, illumination};
+    GLfloat color[3] = { illumination, illumination, illumination };
     glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, color);
 
     glBegin(GL_QUADS);
@@ -212,7 +211,7 @@ void display(void) {
 
     // Set the emission of these polygons to zero; they'll be lit by diffuse
     // and ambient light.
-    GLfloat black[3] = {0.0f, 0.0f, 0.0f};
+    GLfloat black[3] = { 0.0f, 0.0f, 0.0f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, black);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
@@ -257,7 +256,7 @@ typedef struct {
   float z_far;
 } glutWindow;
 
-void initialize() {
+void initialize_open_gl() {
   GLint width = 1024;
   GLint height = 768;
   char *title = "Disco Wookie";
@@ -287,6 +286,57 @@ void initialize() {
   glDepthFunc(GL_LEQUAL);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
+}
+
+typedef struct {
+  float left_phase;
+  float right_phase;
+} paTestData;
+
+/* This routine will be called by the PortAudio engine when audio is needed.
+   It may called at interrupt level on some machines so don't do anything
+   that could mess up the system like calling malloc() or free().
+*/
+static int patestCallback(const void *inputBuffer, void *outputBuffer,
+                          unsigned long framesPerBuffer,
+                          const PaStreamCallbackTimeInfo *timeInfo,
+                          PaStreamCallbackFlags statusFlags, void *userData) {
+
+  return 0;
+}
+
+#define SAMPLE_RATE (44100)
+static paTestData data;
+
+int initialize_audio() {
+  PaError err = Pa_Initialize();
+  if (err != paNoError) {
+    printf("PortAudio error: %s\n", Pa_GetErrorText(err));
+    return err;
+  }
+
+  /* Open an audio I/O stream. */
+  PaStream *stream;
+  err = Pa_OpenDefaultStream(
+      &stream, 1,       /* mono input */
+      0,                /* no output channels */
+      paFloat32,        /* 32 bit floating point output */
+      SAMPLE_RATE, 256, /* frames per buffer, i.e. the number
+                               of sample frames that PortAudio will
+                               request from the callback. Many apps
+                               may want to use
+                               paFramesPerBufferUnspecified, which
+                               tells PortAudio to pick the best,
+                               possibly changing, buffer size.*/
+      patestCallback, /* this is your callback function */
+      &data);         /*This is a pointer that will be passed to
+                your callback*/
+  if (err != paNoError)
+    return err;
+
+  err = Pa_StartStream(stream);
+
+  return err;
 }
 
 int main(void) {
@@ -327,7 +377,11 @@ int main(void) {
   cursor_position_callback(window, 0, 0);
 
   printf("Calling initialize()...\n");
-  initialize();
+  initialize_open_gl();
+
+  // Initialize PortAudio
+  printf("Initializing PortAudio...\n");
+  initialize_audio();
 
   printf("Entering main loop...\n");
   while (!glfwWindowShouldClose(window)) {
@@ -350,8 +404,14 @@ int main(void) {
     glfwPollEvents();
   }
 
+  // Tear down GLFW
   glfwDestroyWindow(window);
   glfwTerminate();
+
+  // Tear down PortAudio
+  PaError err = Pa_Terminate();
+  if (err != paNoError)
+    printf("PortAudio error: %s\n", Pa_GetErrorText(err));
 
   exit(EXIT_SUCCESS);
 }
