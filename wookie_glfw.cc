@@ -46,7 +46,7 @@ fvec_t *onset;
 aubio_onset_t *onset_obj;
 
 aubio_tempo_t *tempo_obj;
-fvec_t * tempo_out;
+fvec_t *tempo_out;
 
 static void error_callback(int error, const char *description) {
   fputs(description, stderr);
@@ -176,16 +176,23 @@ void draw_hairs() {
   static double prev_time = 0;
   double time = glfwGetTime();
 
+  IlluminationMode illuminationMode = getIlluminationMode();
+
   static float global_illumination = 0.0f;
+  if (getIlluminationMode() == BEAT_DETECTION) {
+    // If the visualization mode is BEAT_DETECTION, get the result of the
+    // audio onset and tempo detectors.
+    smpl_t is_onset = fvec_get_sample(onset, 0);
+    smpl_t is_beat = fvec_get_sample(tempo_out, 0);
 
-  smpl_t is_onset = fvec_get_sample(onset, 0);
-  smpl_t is_beat = fvec_get_sample (tempo_out, 0);
+    // Whenever a beat occurs, make all the hairs flash and slowly decay.
+    global_illumination =
+        is_beat ? 1.0f : global_illumination * (15.0f / 16.0f);
 
-  global_illumination = is_beat ? 1.0f : global_illumination * (15.0f / 16.0f);
-
-  if (is_beat) {
-    static int num_beats = 0;
-    printf("beat %d!\n", num_beats++);
+    if (is_beat) {
+      static int num_beats = 0;
+      printf("beat %d!\n", num_beats++);
+    }
   }
 
   for (unsigned int i = 0; i < hairs.size(); ++i) {
@@ -193,19 +200,18 @@ void draw_hairs() {
 
     float illumination = 0.0f;
 
-    // if (inPhotogrammetryMode()) {
-    //   if (time - last_hair_change_time > 0.1f) {
-    //     lit_hair = (lit_hair + 1) % hairs.size();
-    //     last_hair_change_time = time;
-    //   }
+    if (illuminationMode == PHOTOGRAMMETRY) {
+      if (time - last_hair_change_time > 0.1f) {
+        lit_hair = (lit_hair + 1) % hairs.size();
+        last_hair_change_time = time;
+      }
 
-    //   illumination = (i == lit_hair) ? 1.0f : 0.0f;
-    // } else {
-    //   illumination = sin(hair.frequency * time + hair.phase);
-    // }
-    
-    // printf("illumination is %f\n", illumination);
-    illumination = global_illumination;
+      illumination = (i == lit_hair) ? 1.0f : 0.0f;
+    } else if (illuminationMode == RANDOM_SINE_WAVES) {
+      illumination = sin(hair.frequency * time + hair.phase);
+    } else if (illuminationMode == BEAT_DETECTION) {
+          illumination = global_illumination;
+    }
 
     // Set the emission intensity of the hair.
     // TODO(wcraddock): this might be slow. Does it matter?
@@ -319,7 +325,7 @@ typedef struct {
   float right_phase;
 } paTestData;
 
-float* overlap_buffer;
+float *overlap_buffer;
 
 /* This routine will be called by the PortAudio engine when audio is needed.
    It may called at interrupt level on some machines so don't do anything
@@ -330,17 +336,18 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
                           const PaStreamCallbackTimeInfo *timeInfo,
                           PaStreamCallbackFlags statusFlags, void *userData) {
   float *in = (float *)inputBuffer;
-  
+
   // Copy the last half of the buffer to the front half.
   int winsize = 1024;
-  memcpy(&overlap_buffer[0], &overlap_buffer[winsize/2], sizeof(float) * (winsize/2));
+  memcpy(&overlap_buffer[0], &overlap_buffer[winsize / 2],
+         sizeof(float) * (winsize / 2));
 
   // Copy the new data in to the last half of the overlap buffer.
-  memcpy(&overlap_buffer[winsize/2], in, sizeof(float) * (winsize/2));
+  memcpy(&overlap_buffer[winsize / 2], in, sizeof(float) * (winsize / 2));
 
   fvec_t in_vec = { winsize, overlap_buffer };
   aubio_onset_do(onset_obj, &in_vec, onset);
-  aubio_tempo_do (tempo_obj, &in_vec, tempo_out);
+  aubio_tempo_do(tempo_obj, &in_vec, tempo_out);
   // is_beat = fvec_get_sample (tempo_out, 0);
 
   return 0;
@@ -357,15 +364,15 @@ int initialize_audio() {
   }
 
   uint_t winsize = 1024;
-  uint_t stepsize = winsize/2;
+  uint_t stepsize = winsize / 2;
   uint_t sr = SAMPLE_RATE;
 
   /* Open an audio I/O stream. */
   PaStream *stream;
   err = Pa_OpenDefaultStream(
-      &stream, 1,       /* mono input */
-      0,                /* no output channels */
-      paFloat32,        /* 32 bit floating point output */
+      &stream, 1,           /* mono input */
+      0,                    /* no output channels */
+      paFloat32,            /* 32 bit floating point output */
       SAMPLE_RATE, winsize, /* frames per buffer, i.e. the number
                                of sample frames that PortAudio will
                                request from the callback. Many apps
@@ -375,7 +382,7 @@ int initialize_audio() {
                                possibly changing, buffer size.*/
       patestCallback, /* this is your callback function */
       &data);         /*This is a pointer that will be passed to
-                        your callback*/
+        your callback*/
   if (err != paNoError)
     return err;
 
@@ -383,18 +390,18 @@ int initialize_audio() {
   err = Pa_StartStream(stream);
 
   // Onset detection
-  onset = new_fvec (1);
+  onset = new_fvec(1);
   onset_obj = new_aubio_onset("default", winsize, stepsize, SAMPLE_RATE);
-  aubio_onset_set_threshold (onset_obj, 0.0f);
-  aubio_onset_set_silence (onset_obj, -90.0f);
+  aubio_onset_set_threshold(onset_obj, 0.0f);
+  aubio_onset_set_silence(onset_obj, -90.0f);
 
   // Tempo detection
   tempo_out = new_fvec(2);
   overlap_buffer = new float[winsize];
-  tempo_obj = new_aubio_tempo ("default", winsize, stepsize, SAMPLE_RATE);
-  aubio_tempo_set_threshold (tempo_obj, -10.0f);
+  tempo_obj = new_aubio_tempo("default", winsize, stepsize, SAMPLE_RATE);
+  aubio_tempo_set_threshold(tempo_obj, -10.0f);
   // aubio_tempo_set_silence (tempo_obj, -90.0f);
-  
+
   return err;
 }
 

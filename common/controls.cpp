@@ -38,12 +38,12 @@ static float model_angle = 0.0f;
 static glm::mat4 ViewMatrix;
 static glm::mat4 ProjectionMatrix;
 
-static bool photogrammetryMode = false;
+static IlluminationMode illuminationMode = RANDOM_SINE_WAVES;
 
 glm::mat4 getViewMatrix() { return ViewMatrix; }
 glm::mat4 getProjectionMatrix() { return ProjectionMatrix; }
 float getModelAngle() { return model_angle; }
-bool inPhotogrammetryMode() { return photogrammetryMode; }
+IlluminationMode getIlluminationMode() { return illuminationMode; }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods) {
@@ -88,9 +88,17 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     lights_on = !lights_on;
   }
 
-  // Turn photogrammetry mode on and off
-  if (key == GLFW_KEY_P && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-    photogrammetryMode = !photogrammetryMode;
+  // Change illumination modes.
+  if (key == GLFW_KEY_1 && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    illuminationMode = RANDOM_SINE_WAVES;
+  }
+
+  if (key == GLFW_KEY_2 && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    illuminationMode = BEAT_DETECTION;
+  }
+
+  if (key == GLFW_KEY_3 && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    illuminationMode = PHOTOGRAMMETRY;
   }
 
   // // Strafe right
