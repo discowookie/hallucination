@@ -1,0 +1,188 @@
+# project aubio (0.4.1) configured on Sun Oct 19 20:24:46 2014 by
+# waf 1.7.15 (abi 98, python 20708f0 on darwin)
+# using ./waf configure build
+#
+----------------------------------------
+Setting top to
+/Users/warren/Projects/hallucination/third_party/aubio
+----------------------------------------
+Setting out to
+/Users/warren/Projects/hallucination/third_party/aubio/build
+----------------------------------------
+Checking for 'gcc' (c compiler)
+find program=['gcc', 'cc'] paths=['/Users/warren/bin', '/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin', '/opt/X11/bin', '/usr/local/git/bin'] var='CC' -> '/usr/bin/gcc'
+find program=['ar'] paths=['/Users/warren/bin', '/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin', '/opt/X11/bin', '/usr/local/git/bin'] var='AR' -> '/usr/bin/ar'
+/usr/bin/gcc
+----------------------------------------
+Checking for header stdlib.h
+==>
+#include <stdlib.h>
+
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
+	return 0;
+}
+
+<==
+[1/2] [32mc: build/.conf_check_ecfddc2ce29c573b1079b107c2434884/test.c -> build/.conf_check_ecfddc2ce29c573b1079b107c2434884/testbuild/test.c.1.o
+[0m
+['/usr/bin/gcc', '-g', '-Wall', '-Wextra', '-fPIC', '-arch', 'i386', '-arch', 'x86_64', '-DHAVE_ACCELERATE=1', '../test.c', '-c', '-o', 'test.c.1.o']
+[2/2] [33mcprogram: build/.conf_check_ecfddc2ce29c573b1079b107c2434884/testbuild/test.c.1.o -> build/.conf_check_ecfddc2ce29c573b1079b107c2434884/testbuild/testprog
+[0m
+['/usr/bin/gcc', '-arch', 'i386', '-arch', 'x86_64', 'test.c.1.o', '-o', '/Users/warren/Projects/hallucination/third_party/aubio/build/.conf_check_ecfddc2ce29c573b1079b107c2434884/testbuild/testprog', '-framework', 'CoreFoundation', '-framework', 'AudioToolbox', '-framework', 'Accelerate']
+yes
+----------------------------------------
+Checking for header stdio.h
+==>
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
+	return 0;
+}
+
+<==
+[1/2] [32mc: build/.conf_check_e531d2da128ce329dae077bc3212d47c/test.c -> build/.conf_check_e531d2da128ce329dae077bc3212d47c/testbuild/test.c.1.o
+[0m
+['/usr/bin/gcc', '-g', '-Wall', '-Wextra', '-fPIC', '-arch', 'i386', '-arch', 'x86_64', '-DHAVE_ACCELERATE=1', '-DHAVE_STDLIB_H=1', '../test.c', '-c', '-o', 'test.c.1.o']
+[2/2] [33mcprogram: build/.conf_check_e531d2da128ce329dae077bc3212d47c/testbuild/test.c.1.o -> build/.conf_check_e531d2da128ce329dae077bc3212d47c/testbuild/testprog
+[0m
+['/usr/bin/gcc', '-arch', 'i386', '-arch', 'x86_64', 'test.c.1.o', '-o', '/Users/warren/Projects/hallucination/third_party/aubio/build/.conf_check_e531d2da128ce329dae077bc3212d47c/testbuild/testprog', '-framework', 'CoreFoundation', '-framework', 'AudioToolbox', '-framework', 'Accelerate']
+yes
+----------------------------------------
+Checking for header math.h
+==>
+#include <math.h>
+
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
+	return 0;
+}
+
+<==
+[1/2] [32mc: build/.conf_check_04da5dac25a948d76524a22d894f46b2/test.c -> build/.conf_check_04da5dac25a948d76524a22d894f46b2/testbuild/test.c.1.o
+[0m
+['/usr/bin/gcc', '-g', '-Wall', '-Wextra', '-fPIC', '-arch', 'i386', '-arch', 'x86_64', '-DHAVE_ACCELERATE=1', '-DHAVE_STDLIB_H=1', '-DHAVE_STDIO_H=1', '../test.c', '-c', '-o', 'test.c.1.o']
+[2/2] [33mcprogram: build/.conf_check_04da5dac25a948d76524a22d894f46b2/testbuild/test.c.1.o -> build/.conf_check_04da5dac25a948d76524a22d894f46b2/testbuild/testprog
+[0m
+['/usr/bin/gcc', '-arch', 'i386', '-arch', 'x86_64', 'test.c.1.o', '-o', '/Users/warren/Projects/hallucination/third_party/aubio/build/.conf_check_04da5dac25a948d76524a22d894f46b2/testbuild/testprog', '-framework', 'CoreFoundation', '-framework', 'AudioToolbox', '-framework', 'Accelerate']
+yes
+----------------------------------------
+Checking for header string.h
+==>
+#include <string.h>
+
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
+	return 0;
+}
+
+<==
+[1/2] [32mc: build/.conf_check_ce68401a8fd39d5809b9c6fae15145d6/test.c -> build/.conf_check_ce68401a8fd39d5809b9c6fae15145d6/testbuild/test.c.1.o
+[0m
+['/usr/bin/gcc', '-g', '-Wall', '-Wextra', '-fPIC', '-arch', 'i386', '-arch', 'x86_64', '-DHAVE_ACCELERATE=1', '-DHAVE_STDLIB_H=1', '-DHAVE_STDIO_H=1', '-DHAVE_MATH_H=1', '../test.c', '-c', '-o', 'test.c.1.o']
+[2/2] [33mcprogram: build/.conf_check_ce68401a8fd39d5809b9c6fae15145d6/testbuild/test.c.1.o -> build/.conf_check_ce68401a8fd39d5809b9c6fae15145d6/testbuild/testprog
+[0m
+['/usr/bin/gcc', '-arch', 'i386', '-arch', 'x86_64', 'test.c.1.o', '-o', '/Users/warren/Projects/hallucination/third_party/aubio/build/.conf_check_ce68401a8fd39d5809b9c6fae15145d6/testbuild/testprog', '-framework', 'CoreFoundation', '-framework', 'AudioToolbox', '-framework', 'Accelerate']
+yes
+----------------------------------------
+Checking for header limits.h
+==>
+#include <limits.h>
+
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
+	return 0;
+}
+
+<==
+[1/2] [32mc: build/.conf_check_f8a3756fab0052b04fa807bed856ef1c/test.c -> build/.conf_check_f8a3756fab0052b04fa807bed856ef1c/testbuild/test.c.1.o
+[0m
+['/usr/bin/gcc', '-g', '-Wall', '-Wextra', '-fPIC', '-arch', 'i386', '-arch', 'x86_64', '-DHAVE_ACCELERATE=1', '-DHAVE_STDLIB_H=1', '-DHAVE_STDIO_H=1', '-DHAVE_MATH_H=1', '-DHAVE_STRING_H=1', '../test.c', '-c', '-o', 'test.c.1.o']
+[2/2] [33mcprogram: build/.conf_check_f8a3756fab0052b04fa807bed856ef1c/testbuild/test.c.1.o -> build/.conf_check_f8a3756fab0052b04fa807bed856ef1c/testbuild/testprog
+[0m
+['/usr/bin/gcc', '-arch', 'i386', '-arch', 'x86_64', 'test.c.1.o', '-o', '/Users/warren/Projects/hallucination/third_party/aubio/build/.conf_check_f8a3756fab0052b04fa807bed856ef1c/testbuild/testprog', '-framework', 'CoreFoundation', '-framework', 'AudioToolbox', '-framework', 'Accelerate']
+yes
+----------------------------------------
+Checking for C99 __VA_ARGS__ macro
+==>
+
+#include <stdio.h>
+#define AUBIO_ERR(...) fprintf(stderr, __VA_ARGS__)
+
+<==
+[1/2] [32mc: build/.conf_check_3b6ea1b38de4af6eab67fa43577690ab/test.c -> build/.conf_check_3b6ea1b38de4af6eab67fa43577690ab/testbuild/test.c.1.o
+[0m
+['/usr/bin/gcc', '-g', '-Wall', '-Wextra', '-fPIC', '-arch', 'i386', '-arch', 'x86_64', '-DHAVE_ACCELERATE=1', '-DHAVE_STDLIB_H=1', '-DHAVE_STDIO_H=1', '-DHAVE_MATH_H=1', '-DHAVE_STRING_H=1', '-DHAVE_LIMITS_H=1', '../test.c', '-c', '-o', 'test.c.1.o']
+[2/2] [33mcstlib: build/.conf_check_3b6ea1b38de4af6eab67fa43577690ab/testbuild/test.c.1.o -> build/.conf_check_3b6ea1b38de4af6eab67fa43577690ab/testbuild/libtestprog.a
+[0m
+['/usr/bin/ar', 'rcs', 'libtestprog.a', 'test.c.1.o']
+err: warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: archive library: libtestprog.a will be fat and ar(1) will not be able to operate on it
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: i386 file: libtestprog.a(test.c.1.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: libtestprog.a(test.c.1.o) has no symbols
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: warning for library: libtestprog.a for architecture: i386 the table of contents is empty (no object file members in the library define global symbols)
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: warning for library: libtestprog.a for architecture: x86_64 the table of contents is empty (no object file members in the library define global symbols)
+
+yes
+----------------------------------------
+Checking for FFT implementation
+vDSP
+----------------------------------------
+Checking for program pkg-config
+/usr/local/bin/pkg-config
+find program=['pkg-config'] paths=['/Users/warren/bin', '/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin', '/opt/X11/bin', '/usr/local/git/bin'] var='PKGCONFIG' -> '/usr/local/bin/pkg-config'
+----------------------------------------
+Checking for 'sndfile' >= 1.0.4
+['/usr/local/bin/pkg-config', '--atleast-version=1.0.4', 'sndfile']
+not found
+from /Users/warren/Projects/hallucination/third_party/aubio: The configuration failed
+----------------------------------------
+Checking for 'samplerate' >= 0.0.15
+['/usr/local/bin/pkg-config', '--atleast-version=0.0.15', 'samplerate']
+not found
+from /Users/warren/Projects/hallucination/third_party/aubio: The configuration failed
+----------------------------------------
+Checking for 'jack'
+['/usr/local/bin/pkg-config', '--cflags', '--libs', 'jack']
+err: Package jack was not found in the pkg-config search path.
+Perhaps you should add the directory containing `jack.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'jack' found
+
+not found
+from /Users/warren/Projects/hallucination/third_party/aubio: The configuration failed
+----------------------------------------
+Checking for 'libavcodec' >= 54.35.0
+['/usr/local/bin/pkg-config', '--atleast-version=54.35.0', 'libavcodec']
+not found
+from /Users/warren/Projects/hallucination/third_party/aubio: The configuration failed
+----------------------------------------
+Checking for 'libavformat' >= 52.3.0
+['/usr/local/bin/pkg-config', '--atleast-version=52.3.0', 'libavformat']
+not found
+from /Users/warren/Projects/hallucination/third_party/aubio: The configuration failed
+----------------------------------------
+Checking for 'libavutil' >= 52.3.0
+['/usr/local/bin/pkg-config', '--atleast-version=52.3.0', 'libavutil']
+not found
+from /Users/warren/Projects/hallucination/third_party/aubio: The configuration failed
+----------------------------------------
+Checking for 'libavresample' >= 1.0.1
+['/usr/local/bin/pkg-config', '--atleast-version=1.0.1', 'libavresample']
+not found
+from /Users/warren/Projects/hallucination/third_party/aubio: The configuration failed
+----------------------------------------
+Checking for all libav libraries
+not found
+----------------------------------------
+Checking for program txt2man
+not found
+find program=['txt2man'] paths=['/Users/warren/bin', '/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin', '/opt/X11/bin', '/usr/local/git/bin'] var='TXT2MAN' -> ''
+from /Users/warren/Projects/hallucination/third_party/aubio: Could not find the program txt2man
+txt2man was not found (ignoring)
+----------------------------------------
+Checking for program doxygen
+not found
+find program=['doxygen'] paths=['/Users/warren/bin', '/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin', '/opt/X11/bin', '/usr/local/git/bin'] var='DOXYGEN' -> ''
+from /Users/warren/Projects/hallucination/third_party/aubio: Could not find the program doxygen
+doxygen was not found (ignoring)

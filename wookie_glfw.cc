@@ -10,6 +10,9 @@ using namespace glm;
 // PortAudio includes
 #include "portaudio.h"
 
+// Aubio includes
+#include <aubio/aubio.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -301,6 +304,32 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
                           unsigned long framesPerBuffer,
                           const PaStreamCallbackTimeInfo *timeInfo,
                           PaStreamCallbackFlags statusFlags, void *userData) {
+  float *in = (float *)inputBuffer;
+
+  for (int i = 0; i < framesPerBuffer; i++) {
+    printf("in[0] %f\n", in[0]);
+
+    // set window size, and sampling rate
+    uint_t winsize = 1024, sr = 44100;
+    // create a vector
+    fvec_t *this_buffer = new_fvec (winsize);
+    // create the a-weighting filter
+    aubio_filter_t *this_filter = new_aubio_filter_a_weighting (sr);
+    // while (running) {
+    //   // here some code to put some data in this_buffer
+    //   // ...
+    //   // apply the filter, in place
+    //   aubio_filter_do (this_filter, this_buffer);
+    //   // here some code to get some data from this_buffer
+    //   // ...
+    // }
+    // and free the structures
+    del_aubio_filter (this_filter);
+    del_fvec (this_buffer);
+
+    // onset detection
+    // aubio_onset_t *onset = new_aubio_onset (method, winsize, stepsize, samplerate);
+  }
 
   return 0;
 }
@@ -330,7 +359,7 @@ int initialize_audio() {
                                possibly changing, buffer size.*/
       patestCallback, /* this is your callback function */
       &data);         /*This is a pointer that will be passed to
-                your callback*/
+        your callback*/
   if (err != paNoError)
     return err;
 
