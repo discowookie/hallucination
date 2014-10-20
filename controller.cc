@@ -6,10 +6,6 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-void Controller::Init() {
-  // TODO(wcraddock): complete
-}
-
 void Controller::KeyCallback(GLFWwindow *window, int key, int scancode,
                              int action, int mods) {
   bool print = 0;
@@ -145,22 +141,16 @@ void Controller::CursorPositionCallback(GLFWwindow *window, double xpos,
 
 void Controller::ComputeMatrices(GLFWwindow *window,
                                  glm::mat4 &projection_matrix,
+                                 glm::mat4 &model_matrix,
                                  glm::mat4 &view_matrix) {
-  bool print = 1;
+  int window_width, window_height;
+  glfwGetWindowSize(window, &window_width, &window_height);
 
-  // glfwGetTime is called only once, the first time this function is called
-  static double lastTime = glfwGetTime();
+  float aspect_ratio =
+      static_cast<float>(window_width) / static_cast<float>(window_height);
 
-  // Compute time difference between current and last frame
-  double currentTime = glfwGetTime();
-  float deltaTime = float(currentTime - lastTime);
-
-  // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit
-  // <-> 100 units
-  // projection_matrix = glm::ortho( -5.f, 5.f, -50.f, 50.f);
   projection_matrix =
-      glm::perspective(field_of_view_angle_, 4.0f / 3.0f, 0.1f, 500.0f);
-  const char *s = glm::to_string(projection_matrix).c_str();
+      glm::perspective(field_of_view_angle_, aspect_ratio, 0.1f, 500.0f);
 
   // Camera matrix
   view_matrix =
@@ -170,6 +160,7 @@ void Controller::ComputeMatrices(GLFWwindow *window,
                   up_ // Head is up (set to 0,-1,0 to look upside-down)
                   );
 
-  // For the next frame, the "last time" will be "now"
-  lastTime = currentTime;
+  // Model matrix (we only handle rotation here).
+  model_matrix =
+      glm::rotate(glm::mat4(1.0), model_angle_, glm::vec3(0.0f, 1.0f, 0.0f));
 }

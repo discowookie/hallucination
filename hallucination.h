@@ -49,6 +49,8 @@ private:
   void CreateOpenGLWindow();
   void SetupLighting();
 
+  void Display();
+
   int window_width_;
   int window_height_;
 

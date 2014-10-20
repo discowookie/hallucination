@@ -71,6 +71,77 @@ void Hallucination::SetupLighting() {
   glEnable(GL_LIGHTING);
 }
 
-void Hallucination::MainLoop() {}
+void Hallucination::Display() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-Hallucination::~Hallucination() {}
+  // Create a display list for the human body and jacket objects,
+  // which never change.
+  if (human_display_list_ == 0) {
+    printf("Creating jacket and body display list...\n");
+    human_display_list_ = glGenLists(1);
+    glNewList(human_display_list_, GL_COMPILE);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Set the emission of these polygons to zero; they'll be lit by diffuse
+    // and ambient light.
+    GLfloat black[3] = { 0.0f, 0.0f, 0.0f };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, black);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+    // Draw the body in a skin-tone color.
+    glColor3f(1.0f, 0.86f, 0.69f);
+    human_body_obj_.Draw();
+
+    // // Draw the eyes in a ??? color.
+    // glColor3f(1.0f, 1.0f, 1.0f);
+    // eyes_obj.Draw();
+
+    // Draw the jeans in a blue color.
+    glColor3f(0.14f, 0.25f, 0.32f);
+    jeans_obj_.Draw();
+
+    // Draw the jacket in a dark charcoal color.
+    glColor3f(0.25f, 0.25f, 0.25f);
+    jacket_obj_.Draw();
+
+    // Draw the jacket in a dark charcoal color.
+    glColor3f(0.25f, 0.25f, 0.25f);
+    shoes_obj_.Draw();
+
+    glEndList();
+
+    // Create the randomized hairs
+    // generate_random_hairs(2400);
+  }
+
+  // Draw the human (and clothing), then the hairs.
+  glCallList(human_display_list_);
+  // draw_hairs();
+}
+
+void Hallucination::MainLoop() {
+  printf("Entering main loop...\n");
+  while (!glfwWindowShouldClose(window)) {
+    glm::mat4 projection_matrix, view_matrix, model_matrix;
+    Controller::getInstance().ComputeMatrices(window, projection_matrix,
+                                              model_matrix, view_matrix);
+
+    // Set the model-view and projection matrices.
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(&projection_matrix[0][0]);
+    glMatrixMode(GL_MODELVIEW);
+    glm::mat4 MV = view_matrix * model_matrix;
+    glLoadMatrixf(&MV[0][0]);
+
+    Display();
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+  }
+}
+
+Hallucination::~Hallucination() {
+  // Tear down GLFW
+  glfwDestroyWindow(window);
+  glfwTerminate();
+}

@@ -22,7 +22,7 @@ using namespace glm;
 // or the mouse is moved. The Controller then updates the viewer's position,
 // direction, etc. accordingly.
 // 
-// When drawing the scene, call ComputeMatrices() to get the model-view and
+// When drawing the scene, call ComputeMatrices() to get the model, view and
 // projection matrices.
 class Controller {
 public:
@@ -42,19 +42,21 @@ public:
   static void RegisterCallbacks(GLFWwindow *window) {
     glfwSetKeyCallback(window, KeyCallbackWrapper);
     glfwSetCursorPosCallback(window, CursorPositionCallbackWrapper);
+
+    // TODO(wcraddock): this is a bit of a hack. Call the cursor position
+    // callback once here to initialize the up, right, direction vectors.
+    CursorPositionCallbackWrapper(window, 0, 0);
   }
 
-  void Init();
-
   void ComputeMatrices(GLFWwindow *window, glm::mat4 &projection_matrix,
-                       glm::mat4 &view_matrix);
+                       glm::mat4 &model_matrix, glm::mat4 &view_matrix);
 
 private:
   // Controller is a singleton class; you cannot make one yourself. You must use
   // the getInstance() method to obtain the one and only instance.
   Controller()
       : camera_position_(glm::vec3(0, 1.2f, 1.5f)), horizontal_angle_(3.14f),
-        vertical_angle_(0.0f), field_of_view_angle_(60.0f),
+        vertical_angle_(0.0f), field_of_view_angle_(1.047f),
         keyboard_speed_(0.1f), mouse_speed_(0.00001f), model_angle_(0.0f),
         illumination_mode_(RANDOM_SINE_WAVES) {}
 
