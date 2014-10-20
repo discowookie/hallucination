@@ -23,44 +23,31 @@ using namespace glm;
 
 #include <vector>
 
+// TODO(wcraddock): all of the OpenGL window params should really be up here.
+// TODO(wcraddock): put all this static stuff into a class.
 static int window_width = 1024.0f;
 static int window_height = 768.0f;
 
-/* current rotation angle */
-static float angle = 0.f;
-
-#define aisgl_min(x, y) (x < y ? x : y)
-#define aisgl_max(x, y) (y > x ? y : x)
-
-/* the global Assimp scene object */
-GLuint human_display_list = 0;
+// The display list for the whole human model (and clothes).
+static GLuint human_display_list = 0;
 
 // Models for the human body and for the jacket.
-Model_OBJ human_body_obj;
-Model_OBJ eyes_obj;
-Model_OBJ jacket_obj;
-Model_OBJ jeans_obj;
-Model_OBJ shoes_obj;
+static Model_OBJ human_body_obj;
+static Model_OBJ eyes_obj;
+static Model_OBJ jacket_obj;
+static Model_OBJ jeans_obj;
+static Model_OBJ shoes_obj;
 
-fvec_t *onset;
-aubio_onset_t *onset_obj;
+// Aubio onset detector and state.
+static fvec_t *onset_out;
+static aubio_onset_t *onset_obj;
 
-aubio_tempo_t *tempo_obj;
-fvec_t *tempo_out;
+// Aubio beat detector and state.
+static fvec_t *tempo_out;
+static aubio_tempo_t *tempo_obj;
 
 static void error_callback(int error, const char *description) {
   fputs(description, stderr);
-}
-
-/* ----------------------------------------------------------------------------
- */
-void reshape(int width, int height) {
-  const double aspectRatio = (float)width / height, fieldOfView = 45.0;
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(fieldOfView, aspectRatio, 1.0, 1000.0); /* Znear and Zfar */
-  glViewport(0, 0, width, height);
 }
 
 #define TOTAL_FLOATS_IN_TRIANGLE 9
@@ -182,7 +169,7 @@ void draw_hairs() {
   if (getIlluminationMode() == BEAT_DETECTION) {
     // If the visualization mode is BEAT_DETECTION, get the result of the
     // audio onset and tempo detectors.
-    smpl_t is_onset = fvec_get_sample(onset, 0);
+    smpl_t is_onset = fvec_get_sample(onset_out, 0);
     smpl_t is_beat = fvec_get_sample(tempo_out, 0);
 
     // Whenever a beat occurs, make all the hairs flash and slowly decay.
@@ -201,6 +188,8 @@ void draw_hairs() {
     float illumination = 0.0f;
 
     if (illuminationMode == PHOTOGRAMMETRY) {
+      // In this mode, each hair is lit for 1/10th of a second. The hairs
+      // are cycled through in random order.
       if (time - last_hair_change_time > 0.1f) {
         lit_hair = (lit_hair + 1) % hairs.size();
         last_hair_change_time = time;
@@ -210,7 +199,7 @@ void draw_hairs() {
     } else if (illuminationMode == RANDOM_SINE_WAVES) {
       illumination = sin(hair.frequency * time + hair.phase);
     } else if (illuminationMode == BEAT_DETECTION) {
-          illumination = global_illumination;
+      illumination = global_illumination;
     }
 
     // Set the emission intensity of the hair.
@@ -218,6 +207,7 @@ void draw_hairs() {
     GLfloat color[3] = { illumination, illumination, illumination };
     glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, color);
 
+    // Draw the hair as a rectangle.
     glBegin(GL_QUADS);
     glVertex3f(hair.vertices[0].x, hair.vertices[0].y, hair.vertices[0].z);
     glVertex3f(hair.vertices[1].x, hair.vertices[1].y, hair.vertices[1].z);
@@ -278,17 +268,8 @@ void display(void) {
   draw_hairs();
 }
 
-typedef struct {
-  int width;
-  int height;
-  char *title;
-
-  float field_of_view_angle;
-  float z_near;
-  float z_far;
-} glutWindow;
-
-void initialize_open_gl() {
+void initialize_OpenGL() {
+  // These constants define the OpenGL window.
   GLint width = 1024;
   GLint height = 768;
   char *title = "Disco Wookie";
@@ -320,12 +301,7 @@ void initialize_open_gl() {
   glEnable(GL_LIGHTING);
 }
 
-typedef struct {
-  float left_phase;
-  float right_phase;
-} paTestData;
-
-float *overlap_buffer;
+static float *overlap_buffer;
 
 /* This routine will be called by the PortAudio engine when audio is needed.
    It may called at interrupt level on some machines so don't do anything
@@ -345,35 +321,35 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
   // Copy the new data in to the last half of the overlap buffer.
   memcpy(&overlap_buffer[winsize / 2], in, sizeof(float) * (winsize / 2));
 
+  // Run the aubio onset and beat detectors on the overlap buffer.
   fvec_t in_vec = { winsize, overlap_buffer };
-  aubio_onset_do(onset_obj, &in_vec, onset);
+  aubio_onset_do(onset_obj, &in_vec, onset_out);
   aubio_tempo_do(tempo_obj, &in_vec, tempo_out);
   // is_beat = fvec_get_sample (tempo_out, 0);
 
   return 0;
 }
 
-#define SAMPLE_RATE (44100)
-static paTestData data;
-
 int initialize_audio() {
+  // Initialize PortAudip
   PaError err = Pa_Initialize();
   if (err != paNoError) {
     printf("PortAudio error: %s\n", Pa_GetErrorText(err));
     return err;
   }
 
-  uint_t winsize = 1024;
-  uint_t stepsize = winsize / 2;
-  uint_t sr = SAMPLE_RATE;
+  // TODO(wcraddock): put these parameters into the class constructor.
+  uint_t win_size = 1024;
+  uint_t step_size = win_size / 2;
+  uint_t sample_rate = 44100;
 
-  /* Open an audio I/O stream. */
+  // Open an audio I/O stream for one input (microphone).
   PaStream *stream;
   err = Pa_OpenDefaultStream(
       &stream, 1,           /* mono input */
       0,                    /* no output channels */
       paFloat32,            /* 32 bit floating point output */
-      SAMPLE_RATE, winsize, /* frames per buffer, i.e. the number
+      sample_rate, win_size, /* frames per buffer, i.e. the number
                                of sample frames that PortAudio will
                                request from the callback. Many apps
                                may want to use
@@ -381,24 +357,23 @@ int initialize_audio() {
                                tells PortAudio to pick the best,
                                possibly changing, buffer size.*/
       patestCallback, /* this is your callback function */
-      &data);         /*This is a pointer that will be passed to
-        your callback*/
+      NULL);         /* This is a pointer that will be passed to the callback */
   if (err != paNoError)
     return err;
 
   // Start the input audio stream
   err = Pa_StartStream(stream);
 
-  // Onset detection
-  onset = new_fvec(1);
-  onset_obj = new_aubio_onset("default", winsize, stepsize, SAMPLE_RATE);
+  // Create the aubio onset detector
+  onset_out = new_fvec(1);
+  onset_obj = new_aubio_onset("default", win_size, step_size, sample_rate);
   aubio_onset_set_threshold(onset_obj, 0.0f);
   aubio_onset_set_silence(onset_obj, -90.0f);
 
-  // Tempo detection
+  // Create the aubio beat detector.
   tempo_out = new_fvec(2);
-  overlap_buffer = new float[winsize];
-  tempo_obj = new_aubio_tempo("default", winsize, stepsize, SAMPLE_RATE);
+  overlap_buffer = new float[win_size];
+  tempo_obj = new_aubio_tempo("default", win_size, step_size, sample_rate);
   aubio_tempo_set_threshold(tempo_obj, -10.0f);
   // aubio_tempo_set_silence (tempo_obj, -90.0f);
 
@@ -413,14 +388,13 @@ int main(void) {
   jeans_obj.Load("models/jeans01.obj");
   shoes_obj.Load("models/shoes02.obj");
 
+  printf("Creating OpenGL window...\n");
   if (!glfwInit())
     exit(EXIT_FAILURE);
 
   glfwSetErrorCallback(error_callback);
-
   glfwWindowHint(GLFW_SAMPLES, 4);
 
-  printf("Creating OpenGL window...\n");
   GLFWwindow *window = glfwCreateWindow(window_width, window_height,
                                         "Simple example", NULL, NULL);
   if (!window) {
@@ -442,8 +416,8 @@ int main(void) {
   // TODO(wcraddock): this should probably be in an init() function somewhere.
   cursor_position_callback(window, 0, 0);
 
-  printf("Calling initialize()...\n");
-  initialize_open_gl();
+  printf("Initializing OpenGL()...\n");
+  initialize_OpenGL();
 
   // Initialize PortAudio
   printf("Initializing PortAudio...\n");
