@@ -178,7 +178,11 @@ void draw_hairs() {
 
     if (is_beat) {
       static int num_beats = 0;
-      printf("beat %d!\n", num_beats++);
+      printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
+             num_beats++,
+             aubio_tempo_get_last_s(tempo_obj),
+             aubio_tempo_get_bpm(tempo_obj),
+             aubio_tempo_get_confidence(tempo_obj));
     }
   }
 
@@ -301,8 +305,6 @@ void initialize_OpenGL() {
   glEnable(GL_LIGHTING);
 }
 
-static float *overlap_buffer;
-
 /* This routine will be called by the PortAudio engine when audio is needed.
    It may called at interrupt level on some machines so don't do anything
    that could mess up the system like calling malloc() or free().
@@ -313,25 +315,20 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
                           PaStreamCallbackFlags statusFlags, void *userData) {
   float *in = (float *)inputBuffer;
 
-  // Copy the last half of the buffer to the front half.
-  int winsize = 1024;
-  memcpy(&overlap_buffer[0], &overlap_buffer[winsize / 2],
-         sizeof(float) * (winsize / 2));
+  // TODO(wcraddock): put these in a class.
+  int win_size = 1024;
+  int hop_size = win_size / 4;
 
-  // Copy the new data in to the last half of the overlap buffer.
-  memcpy(&overlap_buffer[winsize / 2], in, sizeof(float) * (winsize / 2));
-
-  // Run the aubio onset and beat detectors on the overlap buffer.
-  fvec_t in_vec = { winsize, overlap_buffer };
+  // Run the aubio onset and beat detectors.
+  fvec_t in_vec = { hop_size, in };
   aubio_onset_do(onset_obj, &in_vec, onset_out);
   aubio_tempo_do(tempo_obj, &in_vec, tempo_out);
-  // is_beat = fvec_get_sample (tempo_out, 0);
 
   return 0;
 }
 
 int initialize_audio() {
-  // Initialize PortAudip
+  // Initialize PortAudio
   PaError err = Pa_Initialize();
   if (err != paNoError) {
     printf("PortAudio error: %s\n", Pa_GetErrorText(err));
@@ -340,7 +337,7 @@ int initialize_audio() {
 
   // TODO(wcraddock): put these parameters into the class constructor.
   uint_t win_size = 1024;
-  uint_t step_size = win_size / 2;
+  uint_t hop_size = win_size / 4;
   uint_t sample_rate = 44100;
 
   // Open an audio I/O stream for one input (microphone).
@@ -349,7 +346,7 @@ int initialize_audio() {
       &stream, 1,           /* mono input */
       0,                    /* no output channels */
       paFloat32,            /* 32 bit floating point output */
-      sample_rate, win_size, /* frames per buffer, i.e. the number
+      sample_rate, hop_size, /* frames per buffer, i.e. the number
                                of sample frames that PortAudio will
                                request from the callback. Many apps
                                may want to use
@@ -366,14 +363,13 @@ int initialize_audio() {
 
   // Create the aubio onset detector
   onset_out = new_fvec(1);
-  onset_obj = new_aubio_onset("default", win_size, step_size, sample_rate);
+  onset_obj = new_aubio_onset("default", win_size, hop_size, sample_rate);
   aubio_onset_set_threshold(onset_obj, 0.0f);
   aubio_onset_set_silence(onset_obj, -90.0f);
 
   // Create the aubio beat detector.
   tempo_out = new_fvec(2);
-  overlap_buffer = new float[win_size];
-  tempo_obj = new_aubio_tempo("default", win_size, step_size, sample_rate);
+  tempo_obj = new_aubio_tempo("default", win_size, hop_size, sample_rate);
   aubio_tempo_set_threshold(tempo_obj, -10.0f);
   // aubio_tempo_set_silence (tempo_obj, -90.0f);
 
