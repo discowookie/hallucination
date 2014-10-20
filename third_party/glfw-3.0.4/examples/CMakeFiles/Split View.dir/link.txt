@@ -1,1 +1,0 @@
-/usr/bin/cc   -Wl,-search_paths_first -Wl,-headerpad_max_install_names   "CMakeFiles/Split View.dir/splitview.c.o"  -o "Split View.app/Contents/MacOS/Split View"  ../src/libglfw3.a -framework AGL -framework Cocoa -framework OpenGL -framework IOKit -framework CoreFoundation -framework CoreVideo 
