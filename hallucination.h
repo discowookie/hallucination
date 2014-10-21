@@ -67,8 +67,8 @@ private:
   Model_OBJ jeans_obj_;
   Model_OBJ shoes_obj_;
 
-  // This is a list of all the Hairs that are distributed all over the jacket.
-  std::vector<Hair> hairs;
+  // The Fur object contains a list of Hairs all over the jacket.
+  Fur fur_;
 
   // // Aubio onset detector and state.
   // fvec_t *onset_out_;

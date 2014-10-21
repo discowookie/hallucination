@@ -51,6 +51,10 @@ public:
   void ComputeMatrices(GLFWwindow *window, glm::mat4 &projection_matrix,
                        glm::mat4 &model_matrix, glm::mat4 &view_matrix);
 
+  IlluminationMode GetIlluminationMode() {
+    return illumination_mode_;
+  }
+
 private:
   // Controller is a singleton class; you cannot make one yourself. You must use
   // the getInstance() method to obtain the one and only instance.

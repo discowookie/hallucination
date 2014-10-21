@@ -20,8 +20,6 @@ void Hallucination::CreateOpenGLWindow() {
   if (!glfwInit())
     exit(EXIT_FAILURE);
 
-  // TODO(wcraddock): do we need an error callback?
-  // glfwSetErrorCallback(error_callback);
   glfwWindowHint(GLFW_SAMPLES, 4);
 
   window = glfwCreateWindow(window_width_, window_height_, "Hallucination",
@@ -40,10 +38,6 @@ void Hallucination::CreateOpenGLWindow() {
   // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
-  // Call the cursor callback once, so it'll set up the view matrix.
-  // TODO(wcraddock): this should probably be in an init() function somewhere.
-  // cursor_position_callback(window, 0, 0);
 }
 
 void Hallucination::SetupLighting() {
@@ -72,7 +66,7 @@ void Hallucination::SetupLighting() {
 }
 
 void Hallucination::Display() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Create a display list for the human body and jacket objects,
   // which never change.
@@ -112,12 +106,12 @@ void Hallucination::Display() {
     glEndList();
 
     // Create the randomized hairs
-    // generate_random_hairs(2400);
+    fur_.GenerateRandomHairs(jacket_obj_, 2400);
   }
 
   // Draw the human (and clothing), then the hairs.
   glCallList(human_display_list_);
-  // draw_hairs();
+  fur_.DrawHairs();
 }
 
 void Hallucination::MainLoop() {
