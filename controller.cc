@@ -16,13 +16,11 @@ void Controller::KeyCallback(GLFWwindow *window, int key, int scancode,
   // Move forward
   if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     if (print)
-      printf("Moving up...\n");
     camera_position_ += direction_ * keyboard_speed_;
   }
   // Move backward
   if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     if (print)
-      printf("Moving down...\n");
     camera_position_ -= direction_ * keyboard_speed_;
   }
 
@@ -30,12 +28,10 @@ void Controller::KeyCallback(GLFWwindow *window, int key, int scancode,
   if (key == GLFW_KEY_RIGHT &&
       (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     model_angle_ += 1.0f * keyboard_speed_;
-    // printf("Model angle is now %f\n", model_angle_);
   }
   // Spin model right
   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     model_angle_ -= 1.0f * keyboard_speed_;
-    // printf("Model angle is now %f\n", model_angle_);
   }
 
   // Turn lights on and off
@@ -80,63 +76,31 @@ void Controller::KeyCallback(GLFWwindow *window, int key, int scancode,
 
 void Controller::CursorPositionCallback(GLFWwindow *window, double xpos,
                                         double ypos) {
-  bool print = 0;
-
   const float comparison_epsilon = 0.0001f;
 
   int window_width, window_height;
   glfwGetWindowSize(window, &window_width, &window_height);
 
-  if (print)
-    printf("Cursor position is %f %f\n", xpos, ypos);
-
   float horizontalAngleAdjustment =
       mouse_speed_ * float(window_width / 2.0 - xpos);
   float verticalAngleAdjustment =
       mouse_speed_ * float(window_height / 2.0 - ypos);
-  if (print)
-    printf("Adjusting angles by %f %f\n", horizontalAngleAdjustment,
-           verticalAngleAdjustment);
 
   // Compute new orientation
   horizontal_angle_ += horizontalAngleAdjustment;
   vertical_angle_ += verticalAngleAdjustment;
-  if (print)
-    printf("Angles are %f %f\n", horizontal_angle_, vertical_angle_);
-
-  if (abs(horizontal_angle_ - 0.0) > comparison_epsilon ||
-      abs(vertical_angle_ - 0.0) > comparison_epsilon) {
-    // printf("Mouse movement: horizontal_angle_ %f vertical_angle_ %f\n",
-    // horizontal_angle_, vertical_angle_);
-  }
 
   // Direction_ : Spherical coordinates to Cartesian coordinates conversion
   direction_ = glm::vec3(cos(vertical_angle_) * sin(horizontal_angle_),
                          sin(vertical_angle_),
                          cos(vertical_angle_) * cos(horizontal_angle_));
-  // glm::vec3 direction_ = glm::vec3(
-  //                         glm::eulerAngleYX(horizontal_angle_,
-  // vertical_angle_)
-  //                       * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-  if (print)
-    printf("Camera direction: %f, %f, %f\n", direction_.x, direction_.y,
-           direction_.z);
 
   // Right vector
   right_ = glm::vec3(sin(horizontal_angle_ - 3.14f / 2.0f), 0,
                      cos(horizontal_angle_ - 3.14f / 2.0f));
 
-  if (print)
-    printf("Right_ direction %f %f %f\n", right_.x, right_.y, right_.z);
-
   // Up vector
   up_ = glm::cross(right_, direction_);
-  if (print)
-    printf("Up direction %f %f %f\n", up_.x, up_.y, up_.z);
-
-  if (print)
-    printf("Position %f %f %f\n", camera_position_.x, camera_position_.y,
-           camera_position_.z);
 }
 
 void Controller::ComputeMatrices(GLFWwindow *window,

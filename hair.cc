@@ -35,10 +35,8 @@ void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
         &obj.normals[face_number * TOTAL_FLOATS_IN_TRIANGLE];
     glm::vec3 normal =
         glm::normalize(glm::vec3(normal_f[0], normal_f[1], normal_f[2]));
-    // printf("normal from file: %f %f %f\n", normal.x, normal.y, normal.z);
 
     normal = glm::normalize(glm::cross(B - A, C - A));
-    // printf("computed normal: %f %f %f\n", normal.x, normal.y, normal.z);
 
     // Cross the normal with the "straight down" direction to get a vector
     // that points left, along the width of the hair.
@@ -56,18 +54,6 @@ void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
     glm::vec3 bottom_left = top_left + hair_height * hair_down;
     glm::vec3 bottom_right = bottom_left + hair_width * hair_left;
     glm::vec3 top_right = bottom_right - hair_height * hair_down;
-
-    // printf("top_center %f %f %f\n", top_center.x, top_center.y,
-    // top_center.z);
-    // printf("normal %f %f %f\n", normal.x, normal.y, normal.z);
-    // printf("hair_left %f %f %f\n", hair_left.x, hair_left.y, hair_left.z);
-    // printf("hair_down %f %f %f\n", hair_down.x, hair_down.y, hair_down.z);
-    // printf("top_left %f %f %f\n", top_left.x, top_left.y, top_left.z);
-    // printf("bottom_left %f %f %f\n", bottom_left.x, bottom_left.y,
-    //        bottom_left.z);
-    // printf("bottom_right %f %f %f\n", bottom_right.x, bottom_right.y,
-    //        bottom_right.z);
-    // printf("top_right %f %f %f\n", top_right.x, top_right.y, top_right.z);
 
     Hair hair;
     hair.top_center = top_center;

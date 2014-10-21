@@ -49,7 +49,7 @@ int AudioProcessor::Init() {
                                tells PortAudio to pick the best,
                                possibly changing, buffer size.*/
       paCallback, /* this is your callback function */
-      this);         /* This is a pointer that will be passed to the callback */
+      this);      /* This is a pointer that will be passed to the callback */
   if (err != paNoError)
     return err;
 
