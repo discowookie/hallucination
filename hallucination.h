@@ -6,6 +6,7 @@
 // Disco Wookie includes
 #include "hair.h"
 #include "controller.h"
+#include "audio.h"
 
 // GLWFW includes
 // This library simplifies OpenGL window creation, and mouse & keyboard input.
@@ -48,6 +49,7 @@ private:
   void LoadModels();
   void CreateOpenGLWindow();
   void SetupLighting();
+  void StartAudioProcessor();
 
   void Display();
 
@@ -70,13 +72,7 @@ private:
   // The Fur object contains a list of Hairs all over the jacket.
   Fur fur_;
 
-  // // Aubio onset detector and state.
-  // fvec_t *onset_out_;
-  // aubio_onset_t *onset_obj_;
-
-  // // Aubio beat detector and state.
-  // fvec_t *tempo_out_;
-  // aubio_tempo_t *tempo_obj_;
+  AudioProcessor   audio_processor_;
 };
 
 #endif // __HALLUCINIATION_H__
