@@ -12,9 +12,12 @@
 class AudioProcessor {
 public:
   AudioProcessor() {}
+  ~AudioProcessor();
 
   int Init();
   bool IsBeat(float& last_beat_s, float& tempo_bpm, float& confidence);
+
+  bool is_beat;
 
   // TODO(wcraddock): try to make these member variables private.
 

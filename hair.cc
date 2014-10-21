@@ -90,23 +90,15 @@ void Fur::DrawHairs(AudioProcessor& audio) {
 
   Controller::IlluminationMode illuminationMode =
     Controller::getInstance().GetIlluminationMode();
+  
+  // Get the result of the audio tempo detector.
+  float last_beat_s, tempo_bpm, confidence;
+  bool is_beat = audio.IsBeat(last_beat_s, tempo_bpm, confidence);
 
-  static float global_illumination = 0.0f;
-  if (illuminationMode == Controller::BEAT_DETECTION) {
-    // If the visualization mode is BEAT_DETECTION, get the result of the
-    // tempo detector.
-    float last_beat_s, tempo_bpm, confidence;
-    bool is_beat = audio.IsBeat(last_beat_s, tempo_bpm, confidence);
-
-    // Whenever a beat occurs, make all the hairs flash and slowly decay.
-    global_illumination =
-        is_beat ? 1.0f : global_illumination * (15.0f / 16.0f);
-
-    if (is_beat) {
-      static int num_beats = 0;
-      printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
-             num_beats++, last_beat_s, tempo_bpm, confidence);
-    }
+  if (is_beat) {
+    static int num_beats = 0;
+    printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
+           num_beats++, last_beat_s, tempo_bpm, confidence);
   }
 
   for (unsigned int i = 0; i < hairs.size(); ++i) {
@@ -126,7 +118,17 @@ void Fur::DrawHairs(AudioProcessor& audio) {
     } else if (illuminationMode == Controller::RANDOM_SINE_WAVES) {
       illumination = sin(hair.frequency * time + hair.phase);
     } else if (illuminationMode == Controller::BEAT_DETECTION) {
-      illumination = global_illumination;
+      if (is_beat) {
+        // Pick random hairs to light up to max brightness.
+        float r = ((double)rand() / (RAND_MAX));
+        if (r > 0.7f)
+          hairs[i].illumination = 1.0f;
+      } else {
+        // If there is no beat, make all the hairs decay in brightness.
+        hairs[i].illumination *= (31.0f / 32.0f);
+      }
+
+      illumination = 2.0f * hairs[i].illumination - 1.0f;
     }
 
     // Set the emission intensity of the hair.

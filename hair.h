@@ -22,6 +22,7 @@ public:
 
   float frequency;
   float phase;
+  float illumination;
 };
 
 // The Fur class represents a collection of Hairs. It includes methods to
