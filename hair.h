@@ -5,6 +5,7 @@
 
 // Disco Wookie includes
 #include "obj_reader.h"
+#include "audio.h"
 
 // GLM includes
 // This library provides primitive vector and matrix operations.
@@ -36,7 +37,8 @@ public:
   float FindClosestHair(glm::vec3 &vertex);
 
   // Draw all the of the hairs with OpenGL.
-  void DrawHairs();
+  // TODO(wcraddock): insulate these classes from each other?
+  void DrawHairs(AudioProcessor& audio);
 
   std::vector<Hair>     hairs;
 };

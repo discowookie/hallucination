@@ -112,7 +112,7 @@ void Hallucination::Display() {
 
   // Draw the human (and clothing), then the hairs.
   glCallList(human_display_list_);
-  fur_.DrawHairs();
+  fur_.DrawHairs(audio_processor_);
 }
 
 void Hallucination::StartAudioProcessor() {

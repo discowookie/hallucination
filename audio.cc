@@ -72,3 +72,15 @@ int AudioProcessor::Init() {
   
   return paNoError;
 }
+
+bool AudioProcessor::IsBeat(float& last_beat_s, float& tempo_bpm, float& confidence) {
+  smpl_t is_beat = fvec_get_sample(tempo_out_, 0);
+
+  if (is_beat) {
+    last_beat_s = aubio_tempo_get_last_s(tempo_obj_);
+    tempo_bpm = aubio_tempo_get_bpm(tempo_obj_);
+    confidence = aubio_tempo_get_confidence(tempo_obj_);
+  }
+
+  return is_beat;
+}

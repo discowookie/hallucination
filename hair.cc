@@ -1,5 +1,6 @@
 #include "hair.h"
 #include "controller.h"
+#include "audio.h"
 
 #define TOTAL_FLOATS_IN_TRIANGLE 9
 
@@ -94,7 +95,7 @@ float Fur::FindClosestHair(glm::vec3 &vertex) {
   return min_distance;
 }
 
-void Fur::DrawHairs() {
+void Fur::DrawHairs(AudioProcessor& audio) {
   static int lit_hair = 0;
   static double last_hair_change_time = 0;
 
@@ -105,25 +106,22 @@ void Fur::DrawHairs() {
     Controller::getInstance().GetIlluminationMode();
 
   static float global_illumination = 0.0f;
-  // if (getIlluminationMode() == Controller::BEAT_DETECTION) {
-  //   // If the visualization mode is BEAT_DETECTION, get the result of the
-  //   // audio onset and tempo detectors.
-  //   smpl_t is_onset = fvec_get_sample(onset_out, 0);
-  //   smpl_t is_beat = fvec_get_sample(tempo_out, 0);
+  if (illuminationMode == Controller::BEAT_DETECTION) {
+    // If the visualization mode is BEAT_DETECTION, get the result of the
+    // tempo detector.
+    float last_beat_s, tempo_bpm, confidence;
+    bool is_beat = audio.IsBeat(last_beat_s, tempo_bpm, confidence);
 
-  //   // Whenever a beat occurs, make all the hairs flash and slowly decay.
-  //   global_illumination =
-  //       is_beat ? 1.0f : global_illumination * (15.0f / 16.0f);
+    // Whenever a beat occurs, make all the hairs flash and slowly decay.
+    global_illumination =
+        is_beat ? 1.0f : global_illumination * (15.0f / 16.0f);
 
-  //   if (is_beat) {
-  //     static int num_beats = 0;
-  //     printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
-  //            num_beats++,
-  //            aubio_tempo_get_last_s(tempo_obj),
-  //            aubio_tempo_get_bpm(tempo_obj),
-  //            aubio_tempo_get_confidence(tempo_obj));
-  //   }
-  // }
+    if (is_beat) {
+      static int num_beats = 0;
+      printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
+             num_beats++, last_beat_s, tempo_bpm, confidence);
+    }
+  }
 
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     Hair &hair = hairs[i];
