@@ -119,16 +119,19 @@ void Fur::DrawHairs(AudioProcessor& audio) {
       illumination = sin(hair.frequency * time + hair.phase);
     } else if (illuminationMode == Controller::BEAT_DETECTION) {
       if (is_beat) {
-        // Pick random hairs to light up to max brightness.
+        // Pick random hairs to light up to max brightness. Starts at a multiple
+        // of the confidence, so it doesn't flash when it's not sure of the beat.
         float r = ((double)rand() / (RAND_MAX));
         if (r > 0.7f)
-          hairs[i].illumination = 1.0f;
+          hairs[i].illumination = std::min(confidence * 8.0f, 1.0f);
       } else {
-        // If there is no beat, make all the hairs decay in brightness.
+        // If there is no beat, make all the hairs decay in brightness. Decays
+        // to 0.0f;
         hairs[i].illumination *= (31.0f / 32.0f);
       }
 
-      illumination = 2.0f * hairs[i].illumination - 1.0f;
+      illumination = hairs[i].illumination;
+      illumination = 2.0f * illumination - 1.0f;
     }
 
     // Set the emission intensity of the hair.
