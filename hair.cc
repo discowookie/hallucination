@@ -50,11 +50,14 @@ void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
     const float hair_width = 0.0127f;  // 0.5 inch
     const float hair_height = 0.0762f; // 3 inches
 
+    // Compute the four corners of the hair.
     glm::vec3 top_left = top_center - (hair_width / 2.0f) * hair_left;
     glm::vec3 bottom_left = top_left + hair_height * hair_down;
     glm::vec3 bottom_right = bottom_left + hair_width * hair_left;
     glm::vec3 top_right = bottom_right - hair_height * hair_down;
 
+    // Create a Hair object and push it into the list of hairs.
+    // Give each hair a random frequency and phase.
     Hair hair;
     hair.top_center = top_center;
     hair.vertices[0] = top_left;
@@ -68,6 +71,8 @@ void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
   }
 }
 
+// Given a vertex, finds the distance to the nearest hair's top-center
+// vertex. Used to scatter the hairs evenly across the jacket.
 float Fur::FindClosestHair(glm::vec3 &vertex) {
   float min_distance = FLT_MAX;
 
@@ -81,41 +86,84 @@ float Fur::FindClosestHair(glm::vec3 &vertex) {
   return min_distance;
 }
 
+// This method is called by the OpenGL main loop to draw all of the hairs.
+// It checks the audio processor for events, determines the brightness of
+// each hair, and makes the OpenGL calls to draw the hair with its new
+// brightness.
+// TODO(wcraddock): this is too much to do in one function.
 void Fur::DrawHairs(AudioProcessor& audio) {
+  // If you enable printing, note that it will slow down your OpenGL
+  // display thread, and possibly make the simulation look off-beat.
+  const bool print = 0;
+
+  // State for the photogrammetry.
   static int lit_hair = 0;
   static double last_hair_change_time = 0;
 
+  // Get the current time from OpenGL.
   static double prev_time = 0;
   double time = glfwGetTime();
 
+  // The Controller knows what illuminaton mode we're in (beat detection,
+  // for example).
   Controller::IlluminationMode illuminationMode =
     Controller::getInstance().GetIlluminationMode();
-  
-  // Get the result of the audio tempo detector.
-  float last_beat_s, tempo_bpm, confidence;
-  bool is_beat = audio.IsBeat(last_beat_s, tempo_bpm, confidence);
 
-  if (is_beat) {
-    // If the confidence is very low, don't count it as a beat at all.
-    if (confidence <= 0.1f) {
-      is_beat = false;
-    } else {
-      static int num_beats = 0;
-      printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
-             num_beats++, last_beat_s, tempo_bpm, confidence);
-    }
-  }
+  //
+  // Part 1. Determine confidence that some audio event has happened.
+  // The onset detector is checked first, and it assigns a confidence
+  // value. The beat detector is checked second, and its confidence
+  // overrides that from the onset detector.
+  // 
+  // The idea is that the Disco Wookie should fall back on onset
+  // detection when the beat is not know with any confidence.
+  // 
+  // TODO(wcraddock): These operations should be broken up into a simple
+  // API so that everyone can easily try out visualization code.
 
+  float confidence = 0.0f;
+
+  // The audio processor tells us when an onset event has occurred since the 
+  // last time through this OpenGL display loop.
   float last_onset_s;
   bool is_onset = audio.IsOnset(last_onset_s);
   if (is_onset) {
     static int num_onsets = 0;
-    printf("onset %d: time %.3f s\n", num_onsets++, last_onset_s);
+    if (print) printf("onset %d: time %.3f s\n", num_onsets++, last_onset_s);
 
     // The aubio library does not provide confidence values for onsets.
     // TODO(wcraddock): what the hell is the right idea here?
-    confidence = 1.0f;
+    confidence = 0.5f;
   }
+
+  // The audio processor tells us when a beat event has occurred since the 
+  // last time through this OpenGL display loop.
+  float beat_confidence;
+  float last_beat_s, tempo_bpm;
+  bool is_beat = audio.IsBeat(last_beat_s, tempo_bpm, beat_confidence);
+  if (is_beat) {
+    // If the beat_confidence is very low, don't count it as a beat at all.
+    // Otherwise, make it a strong visual event by giving it high confidence.
+    if (beat_confidence >= 0.1f) {
+      confidence = 1.0f;
+      static int num_beats = 0;
+      if (print) {
+        printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
+              num_beats++, last_beat_s, tempo_bpm, confidence);
+      }
+    }
+  }
+
+  //
+  // Part 2. CHange the illumination of each of the hairs in turn. Use 
+  // the illumination mode, the confidence of the audio detectors,
+  // and possibly black magic to determine each hair's new brightness.
+  // 
+  // It is a game of creating a recurrence relation:
+  //     brightness(now) = f( brightness(last time), confidence, black_magic )
+  // 
+  // TODO(wcraddock): Abstract this out so everyone can easily write
+  // visualization code.
 
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     Hair &hair = hairs[i];
@@ -134,15 +182,16 @@ void Fur::DrawHairs(AudioProcessor& audio) {
     } else if (illuminationMode == Controller::RANDOM_SINE_WAVES) {
       illumination = sin(hair.frequency * time + hair.phase);
     } else if (illuminationMode == Controller::BEAT_DETECTION) {
-      if (is_beat || is_onset) {
-        // Pick random hairs to light up to max brightness. Starts at a multiple
-        // of the confidence, so it doesn't flash when it's not sure of the beat.
+      if (is_onset) {
+        // Pick random hairs to light up to max brightness. Add the confidence
+        // to it, to make it brighter.
         float r = ((double)rand() / (RAND_MAX));
         if (r > 0.8f)
-          hairs[i].illumination = std::max(hairs[i].illumination + 0.3f, 1.0f);
+          hairs[i].illumination =
+            std::min(hairs[i].illumination + confidence, 1.0f);
       } else {
-        // If there is no beat, make all the hairs decay in brightness. Decays
-        // to 0.0f;
+        // If there is no beat or onset, make all the hairs decay in brightness.
+        // Decays to 0.0f. Make this ratio closer to 1 to make the decay slower.
         hairs[i].illumination *= (63.0f / 64.0f);
       }
 
