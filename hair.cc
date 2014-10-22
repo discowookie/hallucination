@@ -182,7 +182,7 @@ void Fur::DrawHairs(AudioProcessor& audio) {
     } else if (illuminationMode == Controller::RANDOM_SINE_WAVES) {
       illumination = sin(hair.frequency * time + hair.phase);
     } else if (illuminationMode == Controller::BEAT_DETECTION) {
-      if (is_onset) {
+      if (is_onset || is_beat) {
         // Pick random hairs to light up to max brightness. Add the confidence
         // to it, to make it brighter.
         float r = ((double)rand() / (RAND_MAX));
