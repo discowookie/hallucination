@@ -138,12 +138,12 @@ void Fur::DrawHairs(AudioProcessor& audio) {
         // Pick random hairs to light up to max brightness. Starts at a multiple
         // of the confidence, so it doesn't flash when it's not sure of the beat.
         float r = ((double)rand() / (RAND_MAX));
-        if (r > 0.7f)
-          hairs[i].illumination = confidence;
+        if (r > 0.8f)
+          hairs[i].illumination = std::max(hairs[i].illumination + 0.3f, 1.0f);
       } else {
         // If there is no beat, make all the hairs decay in brightness. Decays
         // to 0.0f;
-        hairs[i].illumination *= (31.0f / 32.0f);
+        hairs[i].illumination *= (63.0f / 64.0f);
       }
 
       illumination = hairs[i].illumination;
