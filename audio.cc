@@ -1,5 +1,8 @@
 #include "audio.h"
 
+// PortAudio includes
+#include "portaudio.h"
+
 #include <stdio.h>
 
 static int paCallback(const void *inputBuffer, void *outputBuffer,
@@ -18,6 +21,11 @@ static int paCallback(const void *inputBuffer, void *outputBuffer,
   fvec_t in_vec = { hop_size, in };
   aubio_onset_do(ap->onset_obj_, &in_vec, ap->onset_out_);
   aubio_tempo_do(ap->tempo_obj_, &in_vec, ap->tempo_out_);
+
+  smpl_t is_onset = fvec_get_sample(ap->tempo_out_, 0);
+  if (is_onset) {
+    ap->is_onset = true;
+  }
 
   // If a beat occured in this hop, set the flag in AudioProcessor.
   // It will be picked up asynchronously by the OpenGL code.
@@ -88,7 +96,7 @@ int AudioProcessor::Init() {
   onset_out_ = new_fvec(1);
   onset_obj_ = new_aubio_onset("default", win_size, hop_size, sample_rate);
   aubio_onset_set_threshold(onset_obj_, 0.0f);
-  aubio_onset_set_silence(onset_obj_, -90.0f);
+  aubio_onset_set_silence(onset_obj_, -120.0f);
 
   // Create the aubio beat detector.
   tempo_out_ = new_fvec(2);
@@ -111,7 +119,17 @@ bool AudioProcessor::IsBeat(float &last_beat_s, float &tempo_bpm,
   } else {
     return false;
   }
-  
+}
+
+bool AudioProcessor::IsOnset(float &last_onset_s) {
+  if (is_onset) {
+    last_onset_s = aubio_onset_get_last_s(onset_obj_);
+
+    is_onset = 0;
+    return true;
+  } else {
+    return false;
+  }
 }
 
 AudioProcessor::~AudioProcessor() { Pa_Terminate(); }

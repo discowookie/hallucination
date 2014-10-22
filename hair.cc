@@ -96,9 +96,25 @@ void Fur::DrawHairs(AudioProcessor& audio) {
   bool is_beat = audio.IsBeat(last_beat_s, tempo_bpm, confidence);
 
   if (is_beat) {
-    static int num_beats = 0;
-    printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
-           num_beats++, last_beat_s, tempo_bpm, confidence);
+    // If the confidence is very low, don't count it as a beat at all.
+    if (confidence <= 0.1f) {
+      is_beat = false;
+    } else {
+      static int num_beats = 0;
+      printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
+             num_beats++, last_beat_s, tempo_bpm, confidence);
+    }
+  }
+
+  float last_onset_s;
+  bool is_onset = audio.IsOnset(last_onset_s);
+  if (is_onset) {
+    static int num_onsets = 0;
+    printf("onset %d: time %.3f s\n", num_onsets++, last_onset_s);
+
+    // The aubio library does not provide confidence values for onsets.
+    // TODO(wcraddock): what the hell is the right idea here?
+    confidence = 1.0f;
   }
 
   for (unsigned int i = 0; i < hairs.size(); ++i) {
@@ -118,12 +134,12 @@ void Fur::DrawHairs(AudioProcessor& audio) {
     } else if (illuminationMode == Controller::RANDOM_SINE_WAVES) {
       illumination = sin(hair.frequency * time + hair.phase);
     } else if (illuminationMode == Controller::BEAT_DETECTION) {
-      if (is_beat) {
+      if (is_beat || is_onset) {
         // Pick random hairs to light up to max brightness. Starts at a multiple
         // of the confidence, so it doesn't flash when it's not sure of the beat.
         float r = ((double)rand() / (RAND_MAX));
         if (r > 0.7f)
-          hairs[i].illumination = std::min(confidence * 8.0f, 1.0f);
+          hairs[i].illumination = confidence;
       } else {
         // If there is no beat, make all the hairs decay in brightness. Decays
         // to 0.0f;

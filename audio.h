@@ -1,9 +1,6 @@
 #ifndef __HALLUCINATION_AUDIO_H__
 #define __HALLUCINATION_AUDIO_H__
 
-// PortAudio includes
-#include "portaudio.h"
-
 // Aubio includes
 #include <aubio/aubio.h>
 #include <aubio/fvec.h>
@@ -16,8 +13,10 @@ public:
 
   int Init();
   bool IsBeat(float& last_beat_s, float& tempo_bpm, float& confidence);
+  bool IsOnset(float& last_onset_s);
 
   bool is_beat;
+  bool is_onset;
 
   // TODO(wcraddock): try to make these member variables private.
 
