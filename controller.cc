@@ -15,12 +15,10 @@ void Controller::KeyCallback(GLFWwindow *window, int key, int scancode,
 
   // Move forward
   if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-    if (print)
     camera_position_ += direction_ * keyboard_speed_;
   }
   // Move backward
   if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-    if (print)
     camera_position_ -= direction_ * keyboard_speed_;
   }
 
