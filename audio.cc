@@ -22,7 +22,7 @@ static int paCallback(const void *inputBuffer, void *outputBuffer,
   aubio_onset_do(ap->onset_obj_, &in_vec, ap->onset_out_);
   aubio_tempo_do(ap->tempo_obj_, &in_vec, ap->tempo_out_);
 
-  smpl_t is_onset = fvec_get_sample(ap->tempo_out_, 0);
+  smpl_t is_onset = fvec_get_sample(ap->onset_out_, 0);
   if (is_onset) {
     ap->is_onset = true;
   }
@@ -95,8 +95,9 @@ int AudioProcessor::Init() {
   // Create the aubio onset detector
   onset_out_ = new_fvec(1);
   onset_obj_ = new_aubio_onset("default", win_size, hop_size, sample_rate);
-  aubio_onset_set_threshold(onset_obj_, 0.0f);
-  aubio_onset_set_silence(onset_obj_, -120.0f);
+  // aubio_onset_set_threshold(onset_obj_, 1.0f);
+  aubio_onset_set_silence(onset_obj_, -40.0f);
+  aubio_onset_set_minioi_s(onset_obj_, 0.01f); 
 
   // Create the aubio beat detector.
   tempo_out_ = new_fvec(2);

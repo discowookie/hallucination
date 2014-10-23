@@ -144,7 +144,7 @@ void Fur::DrawHairs(AudioProcessor& audio) {
   if (is_beat) {
     // If the beat_confidence is very low, don't count it as a beat at all.
     // Otherwise, make it a strong visual event by giving it high confidence.
-    if (beat_confidence >= 0.1f) {
+    if (beat_confidence >= 0.2f) {
       confidence = 1.0f;
       static int num_beats = 0;
       if (print) {
