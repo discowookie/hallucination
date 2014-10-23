@@ -1,0 +1,4 @@
+To build Hallucination:
+
+cmake -G 'Unix Makefiles' .
+make
