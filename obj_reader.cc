@@ -38,7 +38,7 @@ int Model_OBJ::Load(std::string filename) {
   cout << "Opening filename " << filename << std::endl;
 
   string line;
-  ifstream objFile(filename, ios_base::in);
+  ifstream objFile(filename.c_str(), ios_base::in);
   if (objFile.is_open()) // If obj file is open, continue
   {
     objFile.seekg(0, ios::end);      // Go to end of the file,
