@@ -93,15 +93,16 @@ int AudioProcessor::Init() {
   }
 
   // Create the aubio onset detector
+  char method[] = "default";
   onset_out_ = new_fvec(1);
-  onset_obj_ = new_aubio_onset("default", win_size, hop_size, sample_rate);
+  onset_obj_ = new_aubio_onset(method, win_size, hop_size, sample_rate);
   // aubio_onset_set_threshold(onset_obj_, 1.0f);
   aubio_onset_set_silence(onset_obj_, -40.0f);
   aubio_onset_set_minioi_s(onset_obj_, 0.01f); 
 
   // Create the aubio beat detector.
   tempo_out_ = new_fvec(2);
-  tempo_obj_ = new_aubio_tempo("default", win_size, hop_size, sample_rate);
+  tempo_obj_ = new_aubio_tempo(method, win_size, hop_size, sample_rate);
   // aubio_tempo_set_threshold(tempo_obj_, -50.0f);
   // aubio_tempo_set_silence (tempo_obj_, -90.0f);
 
