@@ -1,3 +1,9 @@
+Dependencies:
+
+On Ubuntu, install:
+sudo aptitude install libxi-dev libxrandr-dev
+
+
 To build Hallucination:
 
 cmake -G 'Unix Makefiles' .
