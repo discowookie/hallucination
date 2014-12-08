@@ -18,6 +18,8 @@ IF(APPLE)
                      COREVIDEO_FRAMEWORK
                      APP_SERVICES_LIBRARY)
    SET(EXTRA_LIBS ${COCOA_FRAMEWORK} ${OPENGL_FRAMEWORK} ${IOKIT_FRAMEWORK} ${COREVIDEO_FRAMEWORK})
+ELSE(APPLE)
+   SET(EXTRA_LIBS GL GLU X11 pthread Xrandr Xi Xxf86vm)
 ENDIF (APPLE)
 
 SET(PROJECT_SRCS main.cc audio.cc controller.cc hair.cc hallucination.cc obj_reader.cc)
