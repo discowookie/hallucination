@@ -35,11 +35,11 @@ using namespace glm;
 #include <aubio/fvec.h>
 #include <aubio/onset/onset.h>
 
+#include "visualizer.h"
+
 class Hallucination {
 public:
-  Hallucination()
-      : window_width_(1024), window_height_(768), human_display_list_(0) {}
-
+  Hallucination();
   ~Hallucination();
 
   void Init();
@@ -73,6 +73,11 @@ private:
   Fur fur_;
 
   AudioProcessor   audio_processor_;
+
+  // Visualizers
+  PhotogrammetryVisualizer photogrammetry_;
+  RandomWaveVisualizer random_waves_;
+  BeatVisualizer beats_;
 };
 
 #endif // __HALLUCINIATION_H__

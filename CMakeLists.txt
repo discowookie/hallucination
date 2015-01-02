@@ -22,7 +22,7 @@ ELSE(APPLE)
    SET(EXTRA_LIBS GL GLU X11 pthread Xrandr Xi Xxf86vm)
 ENDIF (APPLE)
 
-SET(PROJECT_SRCS main.cc audio.cc controller.cc hair.cc hallucination.cc obj_reader.cc)
+SET(PROJECT_SRCS main.cc audio.cc controller.cc hair.cc hallucination.cc obj_reader.cc visualizer.cc)
 
 FIND_PATH(GLM_INCLUDE_DIR glm/glm.hpp PATHS third_party)
 

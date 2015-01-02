@@ -6,6 +6,7 @@
 // Disco Wookie includes
 #include "obj_reader.h"
 #include "audio.h"
+#include "visualizer.h"
 
 // GLM includes
 // This library provides primitive vector and matrix operations.
@@ -15,11 +16,22 @@
 using namespace glm;
 
 class Hair {
-public:
+ public:
+  // Render the hair in OpenGL.
+  void Draw() const;
+
+  // Set a grey scale color.
+  void SetGrey(float illumination);
+
+  // Modified by visualizers to control lighting.
+  GLfloat color[3];
+
+  // Modified only by Fur. When these change, Fur calls
+  // Visualizer::Reposition(), to avoid recomputing the position on each cycle.
   glm::vec3 top_center;
   glm::vec3 vertices[4];
-  glm::vec3 color;
 
+  // TODO(cody): factor these out into visualizer-specific data members.
   float frequency;
   float phase;
   float illumination;
@@ -28,8 +40,8 @@ public:
 // The Fur class represents a collection of Hairs. It includes methods to
 // create new Hairs, etc.
 class Fur {
-public:
-  Fur() {}
+ public:
+  Fur() : visualizer_(NULL) {}
 
   // Given some model object, create a bunch of hairs all over it.
   void GenerateRandomHairs(Model_OBJ &obj, int num_hairs);
@@ -38,10 +50,16 @@ public:
   float FindClosestHair(glm::vec3 &vertex);
 
   // Draw all the of the hairs with OpenGL.
-  // TODO(wcraddock): insulate these classes from each other?
-  void DrawHairs(AudioProcessor& audio);
+  void DrawHairs();
 
-  std::vector<Hair>     hairs;
+  // Use this visualizer to control hairs. Does not take ownership of
+  // visualizer, which is used until the next call to SetVisualizer returns.
+  void SetVisualizer(Visualizer* visualizer);
+
+  std::vector<Hair> hairs;
+
+ private:
+  Visualizer* visualizer_;
 };
 
 #endif // __HAIR_H__
