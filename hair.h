@@ -28,7 +28,6 @@ class Hair {
   glm::vec3 top_center;
   glm::vec3 vertices[4];
 
-  float frequency;
   float phase;
   float illumination;
 };

@@ -1,6 +1,8 @@
 #ifndef __VISUALIZER_H__
 #define __VISUALIZER_H__
 
+#include <vector>
+
 class AudioProcessor;
 class Fur;
 
@@ -36,6 +38,10 @@ class RandomWaveVisualizer : public Visualizer {
   explicit RandomWaveVisualizer(Fur* fur);
   virtual ~RandomWaveVisualizer() {}
   virtual void Draw(double time);
+  virtual void Reposition();
+
+ private:
+  std::vector<double> frequency_;
 };
 
 class BeatVisualizer : public Visualizer {
