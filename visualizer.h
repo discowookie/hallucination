@@ -15,7 +15,10 @@ class Visualizer {
   virtual ~Visualizer() {}
 
   // Called to redraw hairs at a particular time.
-  virtual void Draw(double time) = 0;
+  void Draw(double time);
+
+  // Called to set the illumination of all hairs.
+  virtual void Illuminate(double time) = 0;
 
   // Called when hairs move.
   virtual void Reposition() {};
@@ -28,7 +31,7 @@ class PhotogrammetryVisualizer : public Visualizer {
  public:
   explicit PhotogrammetryVisualizer(Fur* fur);
   virtual ~PhotogrammetryVisualizer() {}
-  virtual void Draw(double time);
+  virtual void Illuminate(double time);
 
  private:
   int lit_hair_;
@@ -39,7 +42,7 @@ class RandomWaveVisualizer : public Visualizer {
  public:
   explicit RandomWaveVisualizer(Fur* fur);
   virtual ~RandomWaveVisualizer() {}
-  virtual void Draw(double time);
+  virtual void Illuminate(double time);
   virtual void Reposition();
 
  private:
@@ -52,7 +55,7 @@ class BeatVisualizer : public Visualizer {
   // Does not take ownership of audio, which must outlive this.
   BeatVisualizer(Fur* fur, AudioProcessor* audio);
   virtual ~BeatVisualizer() {}
-  virtual void Draw(double time);
+  virtual void Illuminate(double time);
   virtual void Reposition();
 
  private:

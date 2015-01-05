@@ -4,12 +4,20 @@
 #include "debug.h"
 #include "hair.h"
 
+void Visualizer::Draw(double time) {
+  Illuminate(time);
+  const vector<Hair>& hairs = fur_->hairs;
+  for (unsigned int i = 0; i < hairs.size(); ++i) {
+    hairs[i].Draw();
+  }
+}
+
 PhotogrammetryVisualizer::PhotogrammetryVisualizer(Fur* fur)
   : Visualizer(fur),
     lit_hair_(-1),
     last_change_(0) {}
 
-void PhotogrammetryVisualizer::Draw(double time) {
+void PhotogrammetryVisualizer::Illuminate(double time) {
   vector<Hair>& hairs = fur_->hairs;
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     Hair& hair = hairs[i];
@@ -25,8 +33,6 @@ void PhotogrammetryVisualizer::Draw(double time) {
     illumination = (i == lit_hair_) ? 1.0f : -1.0f;
 
     hair.SetGrey(illumination);
-    // TODO(cody): separate hair layer into a separate class to allow merging.
-    hair.Draw();
   }
 }
 
@@ -55,13 +61,12 @@ void RandomWaveVisualizer::Reposition() {
   }
 }
 
-void RandomWaveVisualizer::Draw(double time) {
+void RandomWaveVisualizer::Illuminate(double time) {
   vector<Hair>& hairs = fur_->hairs;
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     Hair& hair = hairs[i];
     float illumination = sin(frequency_[i] * time + phase_[i]);
     hair.SetGrey(illumination);
-    hair.Draw();
   }
 }
 
@@ -81,7 +86,7 @@ void BeatVisualizer::Reposition() {
   InitBeatFur(fur_->hairs, &illumination_);
 }
 
-void BeatVisualizer::Draw(double time) {
+void BeatVisualizer::Illuminate(double time) {
   // Determine confidence that some audio event has happened. The onset detector
   // is checked first, and it assigns a confidence value. The beat detector is
   // checked second, and its confidence overrides that from the onset detector.
@@ -142,6 +147,5 @@ void BeatVisualizer::Draw(double time) {
     illumination_[i] = illumination;
     illumination = 2.0f * illumination - 1.0f;
     hair.SetGrey(illumination);
-    hair.Draw();
   }
 }
