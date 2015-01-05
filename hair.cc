@@ -25,7 +25,10 @@ void Hair::SetGrey(float illumination) {
 }
 
 Fur::Fur(AudioProcessor* audio)
-  : audio_(audio) {}
+  : audio_(audio),
+    photogrammetry_(this),
+    random_waves_(this),
+    beats_(this, audio_) {}
 
 void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
   srand(time(NULL));
@@ -115,111 +118,14 @@ float Fur::FindClosestHair(glm::vec3 &vertex) {
 // brightness.
 // TODO(wcraddock): this is too much to do in one function.
 void Fur::DrawHairs(Controller::IlluminationMode mode) {
-  // State for the photogrammetry.
-  static int lit_hair = 0;
-  static double last_hair_change_time = 0;
-
-  // Get the current time from OpenGL.
-  static double prev_time = 0;
-  double time = glfwGetTime();
-
-  //
-  // Part 1. Determine confidence that some audio event has happened.
-  // The onset detector is checked first, and it assigns a confidence
-  // value. The beat detector is checked second, and its confidence
-  // overrides that from the onset detector.
-  // 
-  // The idea is that the Disco Wookie should fall back on onset
-  // detection when the beat is not know with any confidence.
-  // 
-  // TODO(wcraddock): These operations should be broken up into a simple
-  // API so that everyone can easily try out visualization code.
-
-  float confidence = 0.0f;
-
-  // The audio processor tells us when an onset event has occurred since the 
-  // last time through this OpenGL display loop.
-  float last_onset_s;
-  bool is_onset = audio_->IsOnset(last_onset_s);
-  if (is_onset) {
-    static int num_onsets = 0;
-    if (DEBUG_MODE) {
-      printf("onset %d: time %.3f s\n", num_onsets++, last_onset_s);
-    }
-
-    // The aubio library does not provide confidence values for onsets.
-    // TODO(wcraddock): what the hell is the right idea here?
-    confidence = 0.5f;
+  const double time = glfwGetTime();
+  if (mode == Controller::PHOTOGRAMMETRY) {
+    photogrammetry_.Draw(time);
+  } else if (mode == Controller::RANDOM_SINE_WAVES) {
+    random_waves_.Draw(time);
+  } else if (mode == Controller::BEAT_DETECTION) {
+    beats_.Draw(time);
+  } else {
+    assert(false);
   }
-
-  // The audio processor tells us when a beat event has occurred since the 
-  // last time through this OpenGL display loop.
-  float beat_confidence;
-  float last_beat_s, tempo_bpm;
-  bool is_beat = audio_->IsBeat(last_beat_s, tempo_bpm, beat_confidence);
-  if (is_beat) {
-    // If the beat_confidence is very low, don't count it as a beat at all.
-    // Otherwise, make it a strong visual event by giving it high confidence.
-    if (beat_confidence >= 0.2f) {
-      confidence = 1.0f;
-      static int num_beats = 0;
-      if (DEBUG_MODE) {
-        printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
-              num_beats++, last_beat_s, tempo_bpm, confidence);
-      }
-    }
-  }
-
-  //
-  // Part 2. CHange the illumination of each of the hairs in turn. Use 
-  // the illumination mode, the confidence of the audio detectors,
-  // and possibly black magic to determine each hair's new brightness.
-  // 
-  // It is a game of creating a recurrence relation:
-  //     brightness(now) = f( brightness(last time), confidence, black_magic )
-  // 
-  // TODO(wcraddock): Abstract this out so everyone can easily write
-  // visualization code.
-
-  for (unsigned int i = 0; i < hairs.size(); ++i) {
-    Hair &hair = hairs[i];
-
-    float illumination = 0.0f;
-
-    if (mode == Controller::PHOTOGRAMMETRY) {
-      // In this mode, each hair is lit for 1/10th of a second. The hairs
-      // are cycled through in random order.
-      if (time - last_hair_change_time > 0.1f) {
-        lit_hair = (lit_hair + 1) % hairs.size();
-        last_hair_change_time = time;
-      }
-
-      illumination = (i == lit_hair) ? 1.0f : 0.0f;
-    } else if (mode == Controller::RANDOM_SINE_WAVES) {
-      illumination = sin(hair.frequency * time + hair.phase);
-    } else if (mode == Controller::BEAT_DETECTION) {
-      if (is_onset || is_beat) {
-        // Pick random hairs to light up to max brightness. Add the confidence
-        // to it, to make it brighter.
-        float r = ((double)rand() / (RAND_MAX));
-        if (r > 0.8f)
-          hairs[i].illumination =
-            std::min(hairs[i].illumination + confidence, 1.0f);
-      } else {
-        // If there is no beat or onset, make all the hairs decay in brightness.
-        // Decays to 0.0f. Make this ratio closer to 1 to make the decay slower.
-        hairs[i].illumination *= (63.0f / 64.0f);
-      }
-
-      illumination = hairs[i].illumination;
-      illumination = 2.0f * illumination - 1.0f;
-    }
-
-    hair.SetGrey(illumination);
-
-    // Draw the hair as a rectangle.
-    hair.Draw();
-  }
-
-  prev_time = time;
 }

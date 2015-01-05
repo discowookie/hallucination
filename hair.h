@@ -7,6 +7,7 @@
 #include "obj_reader.h"
 #include "audio.h"
 #include "controller.h"
+#include "visualizer.h"
 
 // GLM includes
 // This library provides primitive vector and matrix operations.
@@ -54,6 +55,10 @@ class Fur {
  private:
   AudioProcessor* audio_;
 
+  // Visualizers
+  PhotogrammetryVisualizer photogrammetry_;
+  RandomWaveVisualizer random_waves_;
+  BeatVisualizer beats_;
 };
 
 #endif // __HAIR_H__
