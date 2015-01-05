@@ -1,6 +1,7 @@
 #include "hair.h"
 #include "controller.h"
 #include "audio.h"
+#include "debug.h"
 
 #define TOTAL_FLOATS_IN_TRIANGLE 9
 
@@ -92,10 +93,6 @@ float Fur::FindClosestHair(glm::vec3 &vertex) {
 // brightness.
 // TODO(wcraddock): this is too much to do in one function.
 void Fur::DrawHairs(AudioProcessor& audio) {
-  // If you enable printing, note that it will slow down your OpenGL
-  // display thread, and possibly make the simulation look off-beat.
-  const bool print = 0;
-
   // State for the photogrammetry.
   static int lit_hair = 0;
   static double last_hair_change_time = 0;
@@ -129,7 +126,9 @@ void Fur::DrawHairs(AudioProcessor& audio) {
   bool is_onset = audio.IsOnset(last_onset_s);
   if (is_onset) {
     static int num_onsets = 0;
-    if (print) printf("onset %d: time %.3f s\n", num_onsets++, last_onset_s);
+    if (DEBUG_MODE) {
+      printf("onset %d: time %.3f s\n", num_onsets++, last_onset_s);
+    }
 
     // The aubio library does not provide confidence values for onsets.
     // TODO(wcraddock): what the hell is the right idea here?
@@ -147,7 +146,7 @@ void Fur::DrawHairs(AudioProcessor& audio) {
     if (beat_confidence >= 0.2f) {
       confidence = 1.0f;
       static int num_beats = 0;
-      if (print) {
+      if (DEBUG_MODE) {
         printf("beat %d: time %.3f s, tempo %.2f bpm, confidence %.2f\n",
               num_beats++, last_beat_s, tempo_bpm, confidence);
       }
