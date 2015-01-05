@@ -30,8 +30,8 @@ void PhotogrammetryVisualizer::Draw(double time) {
   }
 }
 
-void InitFur(const std::vector<Hair>& hairs, vector<double>* frequencies,
-             vector<double>* phases) {
+void InitRandomFur(const std::vector<Hair>& hairs, vector<double>* frequencies,
+                   vector<double>* phases) {
   frequencies->clear();
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     double frequency = 5.0f * ((double)rand() / (RAND_MAX));
@@ -43,14 +43,14 @@ void InitFur(const std::vector<Hair>& hairs, vector<double>* frequencies,
 
 RandomWaveVisualizer::RandomWaveVisualizer(Fur* fur)
   : Visualizer(fur) {
-  InitFur(fur->hairs, &frequency_, &phase_);
+  InitRandomFur(fur->hairs, &frequency_, &phase_);
 }
 
 // virtual
 void RandomWaveVisualizer::Reposition() {
   const std::vector<Hair>& hairs = fur_->hairs;
   if (hairs.size() != frequency_.size()) {
-    InitFur(hairs, &frequency_, &phase_);
+    InitRandomFur(hairs, &frequency_, &phase_);
   }
 }
 
