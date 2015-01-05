@@ -4,9 +4,9 @@
 #include <vector>
 
 // Disco Wookie includes
-#include "hair.h"
-#include "controller.h"
 #include "audio.h"
+#include "controller.h"
+#include "hair.h"
 #include "visualizer.h"
 
 // GLWFW includes

@@ -4,9 +4,9 @@
 #include <vector>
 
 // Disco Wookie includes
-#include "obj_reader.h"
 #include "audio.h"
 #include "controller.h"
+#include "obj_reader.h"
 
 // GLM includes
 // This library provides primitive vector and matrix operations.
