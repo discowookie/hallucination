@@ -7,6 +7,7 @@
 #include "hair.h"
 #include "controller.h"
 #include "audio.h"
+#include "visualizer.h"
 
 // GLWFW includes
 // This library simplifies OpenGL window creation, and mouse & keyboard input.

@@ -105,12 +105,3 @@ float Fur::FindClosestHair(glm::vec3 &vertex) {
 
   return min_distance;
 }
-
-// This method is called by the OpenGL main loop to draw all of the hairs.
-// It checks the audio processor for events, determines the brightness of
-// each hair, and makes the OpenGL calls to draw the hair with its new
-// brightness.
-void Fur::DrawHairs(Visualizer* visualizer) {
-  const double time = glfwGetTime();
-  visualizer->Draw(time);
-}

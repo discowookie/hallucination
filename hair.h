@@ -7,7 +7,6 @@
 #include "obj_reader.h"
 #include "audio.h"
 #include "controller.h"
-#include "visualizer.h"
 
 // GLM includes
 // This library provides primitive vector and matrix operations.
@@ -45,10 +44,6 @@ class Fur {
 
   // Return the distance to the hair closest to the given point in space.
   float FindClosestHair(glm::vec3 &vertex);
-
-  // Draw all the of the hairs with OpenGL.
-  // TODO(wcraddock): insulate these classes from each other?
-  void DrawHairs(Visualizer* visualizer);
 
   std::vector<Hair>     hairs;
 };

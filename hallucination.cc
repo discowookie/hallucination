@@ -122,17 +122,16 @@ void Hallucination::Display() {
   glCallList(human_display_list_);
   const Controller& controller(Controller::getInstance());
   Controller::IlluminationMode mode = controller.GetIlluminationMode();
-  Visualizer* visualizer;
+  const double time = glfwGetTime();
   if (mode == Controller::PHOTOGRAMMETRY) {
-    visualizer = &photogrammetry_;
+    photogrammetry_.Draw(time);
   } else if (mode == Controller::RANDOM_SINE_WAVES) {
-    visualizer = &random_waves_;
+    random_waves_.Draw(time);
   } else if (mode == Controller::BEAT_DETECTION) {
-    visualizer = &beats_;
+    beats_.Draw(time);
   } else {
     assert(false);
   }
-  fur_.DrawHairs(visualizer);
 }
 
 void Hallucination::StartAudioProcessor() {
