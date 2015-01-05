@@ -15,6 +15,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
+using std::vector;
+
 class Hair {
  public:
   // Render the hair in OpenGL.
@@ -28,8 +30,8 @@ class Hair {
 
   // Modified only by Fur. When these change, Fur calls
   // Visualizer::Reposition(), to avoid recomputing the position on each cycle.
-  glm::vec3 top_center;
-  glm::vec3 vertices[4];
+  vec3 top_center;
+  vec3 vertices[4];
 };
 
 // The Fur class represents a collection of Hairs. It includes methods to
@@ -41,7 +43,7 @@ class Fur {
   // Given some model object, create a bunch of hairs all over it.
   void GenerateRandomHairs(Model_OBJ &obj, int num_hairs);
 
-  std::vector<Hair>     hairs;
+  vector<Hair> hairs;
 };
 
 #endif // __HAIR_H__

@@ -3,6 +3,8 @@
 
 #include <vector>
 
+using std::vector;
+
 class AudioProcessor;
 class Fur;
 
@@ -41,8 +43,8 @@ class RandomWaveVisualizer : public Visualizer {
   virtual void Reposition();
 
  private:
-  std::vector<double> frequency_;
-  std::vector<double> phase_;
+  vector<double> frequency_;
+  vector<double> phase_;
 };
 
 class BeatVisualizer : public Visualizer {
@@ -56,7 +58,7 @@ class BeatVisualizer : public Visualizer {
  private:
   AudioProcessor* audio_;
   int num_beats_;
-  std::vector<float> illumination_;
+  vector<float> illumination_;
 };
 
 #endif // __VISUALIZER_H__
