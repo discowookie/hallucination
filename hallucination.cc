@@ -4,7 +4,9 @@ Hallucination::Hallucination()
   : window_width_(1024),
     window_height_(768),
     human_display_list_(0),
-    fur_(&audio_processor_) {}
+    photogrammetry_(&fur_),
+    random_waves_(&fur_),
+    beats_(&fur_, &audio_processor_) {}
 
 void Hallucination::Init() {
   LoadModels();
@@ -119,7 +121,18 @@ void Hallucination::Display() {
   // Draw the human (and clothing), then the hairs.
   glCallList(human_display_list_);
   const Controller& controller(Controller::getInstance());
-  fur_.DrawHairs(controller.GetIlluminationMode());
+  Controller::IlluminationMode mode = controller.GetIlluminationMode();
+  Visualizer* visualizer;
+  if (mode == Controller::PHOTOGRAMMETRY) {
+    visualizer = &photogrammetry_;
+  } else if (mode == Controller::RANDOM_SINE_WAVES) {
+    visualizer = &random_waves_;
+  } else if (mode == Controller::BEAT_DETECTION) {
+    visualizer = &beats_;
+  } else {
+    assert(false);
+  }
+  fur_.DrawHairs(visualizer);
 }
 
 void Hallucination::StartAudioProcessor() {

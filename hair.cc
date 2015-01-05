@@ -24,12 +24,6 @@ void Hair::SetGrey(float illumination) {
   color[2] = illumination;
 }
 
-Fur::Fur(AudioProcessor* audio)
-  : audio_(audio),
-    photogrammetry_(this),
-    random_waves_(this),
-    beats_(this, audio_) {}
-
 void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
   srand(time(NULL));
 
@@ -116,16 +110,7 @@ float Fur::FindClosestHair(glm::vec3 &vertex) {
 // It checks the audio processor for events, determines the brightness of
 // each hair, and makes the OpenGL calls to draw the hair with its new
 // brightness.
-// TODO(wcraddock): this is too much to do in one function.
-void Fur::DrawHairs(Controller::IlluminationMode mode) {
+void Fur::DrawHairs(Visualizer* visualizer) {
   const double time = glfwGetTime();
-  if (mode == Controller::PHOTOGRAMMETRY) {
-    photogrammetry_.Draw(time);
-  } else if (mode == Controller::RANDOM_SINE_WAVES) {
-    random_waves_.Draw(time);
-  } else if (mode == Controller::BEAT_DETECTION) {
-    beats_.Draw(time);
-  } else {
-    assert(false);
-  }
+  visualizer->Draw(time);
 }

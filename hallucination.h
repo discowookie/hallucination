@@ -69,6 +69,11 @@ private:
 
   AudioProcessor   audio_processor_;
 
+  // Visualizers
+  PhotogrammetryVisualizer photogrammetry_;
+  RandomWaveVisualizer random_waves_;
+  BeatVisualizer beats_;
+
   // The Fur object contains a list of Hairs all over the jacket.
   Fur fur_;
 };
