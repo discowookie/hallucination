@@ -33,6 +33,7 @@ void PhotogrammetryVisualizer::Draw(double time) {
 void InitRandomFur(const std::vector<Hair>& hairs, vector<double>* frequencies,
                    vector<double>* phases) {
   frequencies->clear();
+  phases->clear();
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     double frequency = 5.0f * ((double)rand() / (RAND_MAX));
     double phase = 3.14f * ((double)rand() / (RAND_MAX));
