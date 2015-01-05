@@ -116,6 +116,9 @@ void Hallucination::Display() {
 
     // Create the randomized hairs
     fur_.GenerateRandomHairs(jacket_obj_, 2400);
+    photogrammetry_.Reposition();
+    random_waves_.Reposition();
+    beats_.Reposition();
   }
 
   // Draw the human (and clothing), then the hairs.
