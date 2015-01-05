@@ -15,7 +15,7 @@
 using namespace glm;
 
 class Hair {
-public:
+ public:
   glm::vec3 top_center;
   glm::vec3 vertices[4];
   glm::vec3 color;
@@ -28,7 +28,7 @@ public:
 // The Fur class represents a collection of Hairs. It includes methods to
 // create new Hairs, etc.
 class Fur {
-public:
+ public:
   Fur() {}
 
   // Given some model object, create a bunch of hairs all over it.
