@@ -51,10 +51,12 @@ class BeatVisualizer : public Visualizer {
   BeatVisualizer(Fur* fur, AudioProcessor* audio);
   virtual ~BeatVisualizer() {}
   virtual void Draw(double time);
+  virtual void Reposition();
 
  private:
   AudioProcessor* audio_;
   int num_beats_;
+  std::vector<float> illumination_;
 };
 
 #endif // __VISUALIZER_H__

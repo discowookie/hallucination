@@ -27,8 +27,6 @@ class Hair {
 
   glm::vec3 top_center;
   glm::vec3 vertices[4];
-
-  float illumination;
 };
 
 // The Fur class represents a collection of Hairs. It includes methods to

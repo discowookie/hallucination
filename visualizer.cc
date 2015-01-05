@@ -65,10 +65,21 @@ void RandomWaveVisualizer::Draw(double time) {
   }
 }
 
+void InitBeatFur(const std::vector<Hair>& hairs, vector<float>* illumination) {
+  illumination->resize(hairs.size(), 0);
+}
+
 BeatVisualizer::BeatVisualizer(Fur* fur, AudioProcessor* audio)
   : Visualizer(fur),
     audio_(audio),
-    num_beats_(0) {}
+    num_beats_(0) {
+  InitBeatFur(fur->hairs, &illumination_);
+}
+
+// virtual
+void BeatVisualizer::Reposition() {
+  InitBeatFur(fur_->hairs, &illumination_);
+}
 
 void BeatVisualizer::Draw(double time) {
   // Determine confidence that some audio event has happened. The onset detector
@@ -113,22 +124,22 @@ void BeatVisualizer::Draw(double time) {
   std::vector<Hair>& hairs = fur_->hairs;
   for (unsigned int i = 0; i < hairs.size(); ++i) {
     Hair& hair = hairs[i];
-    float illumination = hair.illumination;
+    float illumination = illumination_[i];
 
     if (is_onset || is_beat) {
       // Pick random hairs to light up to max brightness. Add the confidence
       // to it, to make it brighter.
       float r = ((double)rand() / (RAND_MAX));
       if (r > 0.8f) {
-        illumination = std::min(hair.illumination + confidence, 1.0f);
+        illumination = std::min(illumination + confidence, 1.0f);
       }
     } else {
       // If there is no beat or onset, make all the hairs decay in brightness.
       // Decays to 0.0f. Make this ratio closer to 1 to make the decay slower.
-      illumination = hair.illumination * (63.0f / 64.0f);
+      illumination = illumination * (63.0f / 64.0f);
     }
 
-    hair.illumination = illumination;
+    illumination_[i] = illumination;
     illumination = 2.0f * illumination - 1.0f;
     hair.SetGrey(illumination);
     hair.Draw();
