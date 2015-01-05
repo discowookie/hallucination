@@ -16,9 +16,16 @@ using namespace glm;
 
 class Hair {
  public:
+  // Render the hair in OpenGL.
+  void Draw() const;
+
+  // Set a grey scale color.
+  void SetGrey(float illumination);
+
+  GLfloat color[3];
+
   glm::vec3 top_center;
   glm::vec3 vertices[4];
-  glm::vec3 color;
 
   float frequency;
   float phase;

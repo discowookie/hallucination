@@ -5,6 +5,26 @@
 
 #define TOTAL_FLOATS_IN_TRIANGLE 9
 
+void Hair::Draw() const {
+  // Set the emission intensity of the hair.
+  // TODO(wcraddock): this might be slow. Does it matter?
+  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, color);
+
+  // Draw the hair as a rectangle.
+  glBegin(GL_QUADS);
+  glVertex3f(vertices[0].x, vertices[0].y, vertices[0].z);
+  glVertex3f(vertices[1].x, vertices[1].y, vertices[1].z);
+  glVertex3f(vertices[2].x, vertices[2].y, vertices[2].z);
+  glVertex3f(vertices[3].x, vertices[3].y, vertices[3].z);
+  glEnd();
+}
+
+void Hair::SetGrey(float illumination) {
+  color[0] = illumination;
+  color[1] = illumination;
+  color[2] = illumination;
+}
+
 void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
   srand(time(NULL));
 
@@ -198,18 +218,10 @@ void Fur::DrawHairs(AudioProcessor& audio) {
       illumination = 2.0f * illumination - 1.0f;
     }
 
-    // Set the emission intensity of the hair.
-    // TODO(wcraddock): this might be slow. Does it matter?
-    GLfloat color[3] = { illumination, illumination, illumination };
-    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, color);
+    hair.SetGrey(illumination);
 
     // Draw the hair as a rectangle.
-    glBegin(GL_QUADS);
-    glVertex3f(hair.vertices[0].x, hair.vertices[0].y, hair.vertices[0].z);
-    glVertex3f(hair.vertices[1].x, hair.vertices[1].y, hair.vertices[1].z);
-    glVertex3f(hair.vertices[2].x, hair.vertices[2].y, hair.vertices[2].z);
-    glVertex3f(hair.vertices[3].x, hair.vertices[3].y, hair.vertices[3].z);
-    glEnd();
+    hair.Draw();
   }
 
   prev_time = time;
