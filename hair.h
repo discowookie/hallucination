@@ -23,8 +23,11 @@ class Hair {
   // Set a grey scale color.
   void SetGrey(float illumination);
 
+  // Modified by visualizers to control lighting.
   GLfloat color[3];
 
+  // Modified only by Fur. When these change, Fur calls
+  // Visualizer::Reposition(), to avoid recomputing the position on each cycle.
   glm::vec3 top_center;
   glm::vec3 vertices[4];
 };
