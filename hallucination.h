@@ -37,9 +37,7 @@ using namespace glm;
 
 class Hallucination {
 public:
-  Hallucination()
-      : window_width_(1024), window_height_(768), human_display_list_(0) {}
-
+  Hallucination();
   ~Hallucination();
 
   void Init();
@@ -69,10 +67,10 @@ private:
   Model_OBJ jeans_obj_;
   Model_OBJ shoes_obj_;
 
+  AudioProcessor   audio_processor_;
+
   // The Fur object contains a list of Hairs all over the jacket.
   Fur fur_;
-
-  AudioProcessor   audio_processor_;
 };
 
 #endif // __HALLUCINIATION_H__

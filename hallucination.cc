@@ -1,5 +1,11 @@
 #include "hallucination.h"
 
+Hallucination::Hallucination()
+  : window_width_(1024),
+    window_height_(768),
+    human_display_list_(0),
+    fur_(&audio_processor_) {}
+
 void Hallucination::Init() {
   LoadModels();
   CreateOpenGLWindow();
@@ -113,7 +119,7 @@ void Hallucination::Display() {
   // Draw the human (and clothing), then the hairs.
   glCallList(human_display_list_);
   const Controller& controller(Controller::getInstance());
-  fur_.DrawHairs(controller.GetIlluminationMode(), audio_processor_);
+  fur_.DrawHairs(controller.GetIlluminationMode());
 }
 
 void Hallucination::StartAudioProcessor() {

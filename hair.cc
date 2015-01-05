@@ -24,6 +24,9 @@ void Hair::SetGrey(float illumination) {
   color[2] = illumination;
 }
 
+Fur::Fur(AudioProcessor* audio)
+  : audio_(audio) {}
+
 void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
   srand(time(NULL));
 
@@ -111,7 +114,7 @@ float Fur::FindClosestHair(glm::vec3 &vertex) {
 // each hair, and makes the OpenGL calls to draw the hair with its new
 // brightness.
 // TODO(wcraddock): this is too much to do in one function.
-void Fur::DrawHairs(Controller::IlluminationMode mode, AudioProcessor& audio) {
+void Fur::DrawHairs(Controller::IlluminationMode mode) {
   // State for the photogrammetry.
   static int lit_hair = 0;
   static double last_hair_change_time = 0;
@@ -137,7 +140,7 @@ void Fur::DrawHairs(Controller::IlluminationMode mode, AudioProcessor& audio) {
   // The audio processor tells us when an onset event has occurred since the 
   // last time through this OpenGL display loop.
   float last_onset_s;
-  bool is_onset = audio.IsOnset(last_onset_s);
+  bool is_onset = audio_->IsOnset(last_onset_s);
   if (is_onset) {
     static int num_onsets = 0;
     if (DEBUG_MODE) {
@@ -153,7 +156,7 @@ void Fur::DrawHairs(Controller::IlluminationMode mode, AudioProcessor& audio) {
   // last time through this OpenGL display loop.
   float beat_confidence;
   float last_beat_s, tempo_bpm;
-  bool is_beat = audio.IsBeat(last_beat_s, tempo_bpm, beat_confidence);
+  bool is_beat = audio_->IsBeat(last_beat_s, tempo_bpm, beat_confidence);
   if (is_beat) {
     // If the beat_confidence is very low, don't count it as a beat at all.
     // Otherwise, make it a strong visual event by giving it high confidence.

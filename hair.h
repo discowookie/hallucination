@@ -37,7 +37,7 @@ class Hair {
 // create new Hairs, etc.
 class Fur {
  public:
-  Fur() {}
+  explicit Fur(AudioProcessor* audio);
 
   // Given some model object, create a bunch of hairs all over it.
   void GenerateRandomHairs(Model_OBJ &obj, int num_hairs);
@@ -47,9 +47,13 @@ class Fur {
 
   // Draw all the of the hairs with OpenGL.
   // TODO(wcraddock): insulate these classes from each other?
-  void DrawHairs(Controller::IlluminationMode mode, AudioProcessor& audio);
+  void DrawHairs(Controller::IlluminationMode mode);
 
   std::vector<Hair>     hairs;
+
+ private:
+  AudioProcessor* audio_;
+
 };
 
 #endif // __HAIR_H__
