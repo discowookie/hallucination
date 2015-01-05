@@ -28,8 +28,7 @@ class Hair {
   // Modified by visualizers to control lighting.
   GLfloat color[3];
 
-  // Modified only by Fur. When these change, Fur calls
-  // Visualizer::Reposition(), to avoid recomputing the position on each cycle.
+  // Modified only by Fur only once after instantiation.
   vec3 top_center;
   vec3 vertices[4];
 };
