@@ -24,6 +24,21 @@ void Hair::SetGrey(float illumination) {
   color[2] = illumination;
 }
 
+// Given a vertex, finds the distance to the nearest hair's top-center
+// vertex. Used to scatter the hairs evenly across the jacket.
+float FindClosestHair(const vector<Hair>& hairs, glm::vec3 &vertex) {
+  float min_distance = FLT_MAX;
+
+  for (unsigned int i = 0; i < hairs.size(); ++i) {
+    float distance = glm::length(vertex - hairs[i].top_center);
+    if (distance < min_distance) {
+      min_distance = distance;
+    }
+  }
+
+  return min_distance;
+}
+
 void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
   srand(time(NULL));
 
@@ -45,7 +60,7 @@ void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
     glm::vec3 top_center = A + r1 * (B - A) + r2 * (C - A);
 
     // If the point is too close to an existing hair, try again.
-    float closest_hair = FindClosestHair(top_center);
+    float closest_hair = FindClosestHair(hairs, top_center);
     if (closest_hair < 0.0127f) {
       continue;
     }
@@ -87,17 +102,3 @@ void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
   }
 }
 
-// Given a vertex, finds the distance to the nearest hair's top-center
-// vertex. Used to scatter the hairs evenly across the jacket.
-float Fur::FindClosestHair(glm::vec3 &vertex) {
-  float min_distance = FLT_MAX;
-
-  for (unsigned int i = 0; i < hairs.size(); ++i) {
-    float distance = glm::length(vertex - hairs[i].top_center);
-    if (distance < min_distance) {
-      min_distance = distance;
-    }
-  }
-
-  return min_distance;
-}

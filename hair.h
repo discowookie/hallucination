@@ -41,9 +41,6 @@ class Fur {
   // Given some model object, create a bunch of hairs all over it.
   void GenerateRandomHairs(Model_OBJ &obj, int num_hairs);
 
-  // Return the distance to the hair closest to the given point in space.
-  float FindClosestHair(glm::vec3 &vertex);
-
   std::vector<Hair>     hairs;
 };
 
