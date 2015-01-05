@@ -6,6 +6,7 @@
 // Disco Wookie includes
 #include "obj_reader.h"
 #include "audio.h"
+#include "controller.h"
 
 // GLM includes
 // This library provides primitive vector and matrix operations.
@@ -46,7 +47,7 @@ class Fur {
 
   // Draw all the of the hairs with OpenGL.
   // TODO(wcraddock): insulate these classes from each other?
-  void DrawHairs(AudioProcessor& audio);
+  void DrawHairs(Controller::IlluminationMode mode, AudioProcessor& audio);
 
   std::vector<Hair>     hairs;
 };

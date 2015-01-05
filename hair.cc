@@ -1,5 +1,4 @@
 #include "hair.h"
-#include "controller.h"
 #include "audio.h"
 #include "debug.h"
 
@@ -112,7 +111,7 @@ float Fur::FindClosestHair(glm::vec3 &vertex) {
 // each hair, and makes the OpenGL calls to draw the hair with its new
 // brightness.
 // TODO(wcraddock): this is too much to do in one function.
-void Fur::DrawHairs(AudioProcessor& audio) {
+void Fur::DrawHairs(Controller::IlluminationMode mode, AudioProcessor& audio) {
   // State for the photogrammetry.
   static int lit_hair = 0;
   static double last_hair_change_time = 0;
@@ -120,11 +119,6 @@ void Fur::DrawHairs(AudioProcessor& audio) {
   // Get the current time from OpenGL.
   static double prev_time = 0;
   double time = glfwGetTime();
-
-  // The Controller knows what illuminaton mode we're in (beat detection,
-  // for example).
-  Controller::IlluminationMode illuminationMode =
-    Controller::getInstance().GetIlluminationMode();
 
   //
   // Part 1. Determine confidence that some audio event has happened.
@@ -189,7 +183,7 @@ void Fur::DrawHairs(AudioProcessor& audio) {
 
     float illumination = 0.0f;
 
-    if (illuminationMode == Controller::PHOTOGRAMMETRY) {
+    if (mode == Controller::PHOTOGRAMMETRY) {
       // In this mode, each hair is lit for 1/10th of a second. The hairs
       // are cycled through in random order.
       if (time - last_hair_change_time > 0.1f) {
@@ -198,9 +192,9 @@ void Fur::DrawHairs(AudioProcessor& audio) {
       }
 
       illumination = (i == lit_hair) ? 1.0f : 0.0f;
-    } else if (illuminationMode == Controller::RANDOM_SINE_WAVES) {
+    } else if (mode == Controller::RANDOM_SINE_WAVES) {
       illumination = sin(hair.frequency * time + hair.phase);
-    } else if (illuminationMode == Controller::BEAT_DETECTION) {
+    } else if (mode == Controller::BEAT_DETECTION) {
       if (is_onset || is_beat) {
         // Pick random hairs to light up to max brightness. Add the confidence
         // to it, to make it brighter.

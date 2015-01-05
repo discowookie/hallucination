@@ -51,7 +51,7 @@ public:
   void ComputeMatrices(GLFWwindow *window, glm::mat4 &projection_matrix,
                        glm::mat4 &model_matrix, glm::mat4 &view_matrix);
 
-  IlluminationMode GetIlluminationMode() {
+  IlluminationMode GetIlluminationMode() const {
     return illumination_mode_;
   }
 
