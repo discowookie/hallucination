@@ -77,15 +77,12 @@ void Fur::GenerateRandomHairs(Model_OBJ &obj, int num_hairs) {
     glm::vec3 top_right = bottom_right - hair_height * hair_down;
 
     // Create a Hair object and push it into the list of hairs.
-    // Give each hair a random frequency and phase.
     Hair hair;
     hair.top_center = top_center;
     hair.vertices[0] = top_left;
     hair.vertices[1] = bottom_left;
     hair.vertices[2] = bottom_right;
     hair.vertices[3] = top_right;
-    hair.phase = 3.14f * ((double)rand() / (RAND_MAX));
-
     hairs.push_back(hair);
   }
 }

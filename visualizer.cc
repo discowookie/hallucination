@@ -30,32 +30,35 @@ void PhotogrammetryVisualizer::Draw(double time) {
   }
 }
 
-void InitFur(const std::vector<Hair>& hairs, vector<double>* frequency) {
-  frequency->clear();
+void InitFur(const std::vector<Hair>& hairs, vector<double>* frequencies,
+             vector<double>* phases) {
+  frequencies->clear();
   for (unsigned int i = 0; i < hairs.size(); ++i) {
-    double freq = 5.0f * ((double)rand() / (RAND_MAX));
-    frequency->push_back(freq);
+    double frequency = 5.0f * ((double)rand() / (RAND_MAX));
+    double phase = 3.14f * ((double)rand() / (RAND_MAX));
+    frequencies->push_back(frequency);
+    phases->push_back(phase);
   }
 }
 
 RandomWaveVisualizer::RandomWaveVisualizer(Fur* fur)
   : Visualizer(fur) {
-  InitFur(fur->hairs, &frequency_);
+  InitFur(fur->hairs, &frequency_, &phase_);
 }
 
 // virtual
 void RandomWaveVisualizer::Reposition() {
   const std::vector<Hair>& hairs = fur_->hairs;
   if (hairs.size() != frequency_.size()) {
-    InitFur(hairs, &frequency_);
+    InitFur(hairs, &frequency_, &phase_);
   }
 }
 
 void RandomWaveVisualizer::Draw(double time) {
   std::vector<Hair>& hairs = fur_->hairs;
   for (unsigned int i = 0; i < hairs.size(); ++i) {
-    Hair& hair = hairs[i];  
-    float illumination = sin(frequency_[i] * time + hair.phase);
+    Hair& hair = hairs[i];
+    float illumination = sin(frequency_[i] * time + phase_[i]);
     hair.SetGrey(illumination);
     hair.Draw();
   }

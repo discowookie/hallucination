@@ -42,6 +42,7 @@ class RandomWaveVisualizer : public Visualizer {
 
  private:
   std::vector<double> frequency_;
+  std::vector<double> phase_;
 };
 
 class BeatVisualizer : public Visualizer {
