@@ -34,12 +34,9 @@ class Hair {
   vec3 vertices[4];
 };
 
-// The Fur class represents a collection of Hairs. It includes methods to
-// create new Hairs, etc.
+// Fur is a collection of Hairs
 class Fur {
  public:
-  Fur() {}
-
   // Given some model object, create a bunch of hairs all over it.
   void GenerateRandomHairs(Model_OBJ &obj, int num_hairs);
 
