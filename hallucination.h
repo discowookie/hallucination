@@ -72,11 +72,12 @@ private:
 
   // Visualizers
   PhotogrammetryVisualizer photogrammetry_;
-  RandomWaveVisualizer random_waves_;
-  BeatVisualizer beats_;
 
   // The Fur object contains a list of Hairs all over the jacket.
   Fur fur_;
+
+  RandomWaveVisualizer random_waves_;
+  BeatVisualizer beats_;
 };
 
 #endif // __HALLUCINIATION_H__
