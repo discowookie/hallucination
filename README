@@ -1,10 +1,30 @@
-Dependencies:
+# Dependencies:
 
 On Ubuntu, install:
 sudo aptitude install libxi-dev libxrandr-dev
 
+(See below for MacOS X setup)
 
-To build Hallucination:
+# To build Hallucination:
 
 cmake -G 'Unix Makefiles' .
 make
+
+# MacOS X setup:
+
+1. Install Xcode for GCC dependencies.
+   (Maybe brew should be used to install gcc instead?)
+
+2. Install brew.
+
+	ruby -e "$(curl -fsSL \
+	    https://raw.githubusercontent.com/Homebrew/install/master/install)"
+	brew doctor
+
+3. Use brew to install libraries.
+
+	brew tap homebrew/versions
+        brew install cmake
+	brew install aubio
+	brew install portaudio
+	brew install --build-bottle --static glfw3
